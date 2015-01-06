@@ -1,6 +1,7 @@
 var base = new Object();
 (function(module, global)
 {
+	global.globalConfig = {};
 	var hooked = [];
 	function onError(error)
 	{
@@ -55,8 +56,12 @@ var base = new Object();
 			}
 			else
 			{
-				var mod = new Object();
-				global[obj.name] = mod;
+				var mod = global[obj.name];
+				if(typeof mod == 'undefined')
+				{
+					var mod = new Object();
+					global[obj.name] = mod;
+				}
 				obj.module(mod);
 			}
 		};
