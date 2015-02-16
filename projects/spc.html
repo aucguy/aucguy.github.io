@@ -1,11 +1,22 @@
 
-</div>
+
 <!DOCTYPE html>
 <html>
 <head>
 	<title></title>
 	<script src="/scripts/base.js"></script>
 <script src="/scripts/resource.js"></script>
+	<script>
+	
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-59265400-1', 'auto');
+  ga('send', 'pageview');
+
+	</script>
 	<script src="/scripts/tab.js"></script>
 	
 	<script>base.init()</script>
@@ -56,6 +67,15 @@
 	</span>
 </span>
 
+			<span id="tab-About" onmouseover="website.showTabList('About')" onmouseout="website.hideTabList('About')">
+	<a href="/about.html">
+		<img src="/assets/tabs/About.svg" alt="About" style="border:0" onload="website.initTabList('About')"></img>
+	</a>
+	<span id="tabList-About" style="display:none;position:absolute">
+		
+	</span>
+</span>
+
 		</div>
 		<div class="midsection">
 			
@@ -84,6 +104,7 @@
   <li><a href="/downloads/spc/spc-5.0-1.7.2.jar">5.0-1.7.2</a></li>
 </ul>
 
+</div>
 
 		</div>
 	</div>
