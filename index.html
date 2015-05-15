@@ -4,30 +4,66 @@
 
 
 
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
 	<title></title>
-	<script src="/scripts/base.js"></script>
+	 
+<script src="/scripts/base.js"></script>
 <script src="/scripts/resource.js"></script>
 	<script>
 	
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-59265400-1', 'auto');
-  ga('send', 'pageview');
-
+  	ga('create', 'UA-59265400-1', 'auto');
+  	ga('send', 'pageview');
+	
+  	 
 	</script>
 	<script src="/scripts/tab.js"></script>
+	<script>
+		globalConfig.tabs = {
+			tabs : [
+			        {
+			    		name: "Blog",
+			    		link: "/index.html"
+			    	},
+			   		{
+			    		name: "Projects",
+			    		link: "/projects/index.html",
+			    		items: [
+			    	    	{
+			    				name: "spc",
+			    				link: "/projects/spc.html"
+			    			},
+			    			{
+			    				name: "Wave Demo",
+			    				link: "/projects/wavedemo/index.html"
+			    			}
+			    		]
+			   		},
+			   		{
+			   			name: "About",
+			   			link: "/about.html"
+			   		}
+				]
+		}
+	</script>
 	
 	
 	<script src="scripts/loadposts.js"></script>
-	<script>globalConfig['feedCategory']="main"</script>
+	<script>globalConfig.feedCategory="main"</script>
 
 	<script>base.init()</script>
+	
+	
 	<style>
 	#content
 	{
@@ -45,51 +81,26 @@
 	}
 	</style>
 </head>
-<body background="/assets/background.svg">
+<body background="/assets/background.svg" onload="tabs.loadTabs();">
 	<div id="content">
+		
 		<div style="text-align:center">
 			<img src="/assets/title.svg" alt="Aucguy's Website"></img>
 		</div>
 		
-		<div id="tabs">
-			<span id="tab-Blog" onmouseover="website.showTabList('Blog')" onmouseout="website.hideTabList('Blog')">
-	<a href="/">
-		<img src="/assets/tabs/Blog.svg" alt="Blog" style="border:0" onload="website.initTabList('Blog')"></img>
-	</a>
-	<span id="tabList-Blog" style="display:none;position:absolute">
 		
-	</span>
-</span>
-
-			 
-			<span id="tab-Projects" onmouseover="website.showTabList('Projects')" onmouseout="website.hideTabList('Projects')">
-	<a href="/projects/">
-		<img src="/assets/tabs/Projects.svg" alt="Projects" style="border:0" onload="website.initTabList('Projects')"></img>
-	</a>
-	<span id="tabList-Projects" style="display:none;position:absolute">
+		<table id="tabs">
+			<tr id="tabsrow">
+			</tr>
+		</table>
 		
-				<a href="/projects/spc.html">
-	<img src="/assets/tabs/items/spc.svg" alt="spc"></img>
-</a>
-			
-	</span>
-</span>
-
-			<span id="tab-About" onmouseover="website.showTabList('About')" onmouseout="website.hideTabList('About')">
-	<a href="/about.html">
-		<img src="/assets/tabs/About.svg" alt="About" style="border:0" onload="website.initTabList('About')"></img>
-	</a>
-	<span id="tabList-About" style="display:none;position:absolute">
 		
-	</span>
-</span>
-
-		</div>
 		<div class="midsection">
 			
 	<div id="posts">
 	</div>
-
+	
+	
 	<p>
 		<button type="button" onclick="website.loadPosts('main', 3)">load more posts</button>
 	</p>

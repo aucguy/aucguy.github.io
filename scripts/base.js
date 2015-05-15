@@ -1,118 +1,100 @@
 var base = new Object();
-(function(module, global)
-{
+(function(module, global) {
 	global.globalConfig = {};
 	var hooked = [];
-	function onError(error)
-	{
-		for(var i=0; i<hooked.length; i++)
-		{
+	function onError(error) {
+		for (var i = 0; i < hooked.length; i++) {
 			clearInterval(hooked[i]);
 		}
 		console.error(error.name + ": " + error.message);
 		console.error(error.stack);
 
-		alert(error.name+": "+error.message+"\n"+error.stack);
+		alert(error.name + ": " + error.message + "\n" + error.stack);
 	}
 	module.onError = onError;
 
-	function runAndReportErrors(func, self, args)
-	{
-		if(typeof self == 'undefined')
-		{
+	function runAndReportErrors(func, self, args) {
+		if (typeof self == 'undefined') {
 			self = null;
 		}
-		if(typeof args == 'undefined')
-		{
+		if (typeof args == 'undefined') {
 			args = [];
 		}
-		
-		try
-		{
+
+		try {
 			func.apply(self, args);
-		}
-		catch(error)
-		{
+		} catch (error) {
 			onError(error);
 		}
-	};
+	}
+	;
 	module.runAndReportErrors = runAndReportErrors;
-	
+
 	var modules = [];
-	
-	function loadModules()
-	{
-		for(var i=0; i<modules.length; i++)
-		{
+
+	function loadModules() {
+		for (var i = 0; i < modules.length; i++) {
 			var obj = modules[i];
-			if(obj.name == "?global")
-			{
+			if (obj.name == "?global") {
 				var mod = global;
 				obj.module(mod);
-			}
-			else if(obj.name == "?thisIsWindow")
-			{
+			} else if (obj.name == "?thisIsWindow") {
 				obj.module.call(global);
-			}
-			else
-			{
+			} else {
 				var mod = global[obj.name];
-				if(typeof mod == 'undefined')
-				{
+				if (typeof mod == 'undefined') {
 					var mod = new Object();
 					global[obj.name] = mod;
 				}
 				obj.module(mod);
 			}
-		};
+		}
+		;
+	}
+	;
+
+	module.registerModule = function(name, mod) {
+		modules.push({
+			name : name,
+			module : mod
+		});
 	};
-	
-	module.registerModule = function(name, mod)
-	{
-		modules.push({name:name, module:mod});
-	};
-	
-	module.init = function()
-	{
+
+	module.init = function() {
 		runAndReportErrors(loadModules);
 	};
 
-	module.setInterval = function(func, inter)
-	{
-		var r = setInterval(function(){runAndReportErrors(func);}, inter);
+	module.setInterval = function(func, inter) {
+		var r = setInterval(function() {
+			runAndReportErrors(func);
+		}, inter);
 		hooked.push(r);
 		return r;
 	};
-	
-	module.clearInterval = function(int)
-	{
+
+	module.clearInterval = function(int) {
 		clearInterval(int);
 		hooked.splice(hooked.indexOf(int), 1);
 	};
-	
-	module.external = function(func)
-	{
-		return function()
-		{
+
+	module.external = function(func) {
+		return function() {
 			runAndReportErrors(func, null, arguments);
 		};
 	}
 })(base, this);
 
-base.registerModule('?global', function(module)
-{
-	module.extend = function(base, sub)
-	{
+base.registerModule('?global', function(module) {
+	module.extend = function(base, sub) {
 		sub.prototype = Object.create(base.prototype);
 		sub.prototype.constructor = sub;
 		sub.super = base.prototype;
 		return sub;
 	};
-	
-	/*parseInt doesn't handle exponents*/
-	module.safeParseInt = function(str)
-	{
+
+	/* parseInt doesn't handle exponents */
+	module.safeParseInt = function(str) {
 		return Math.round(parseFloat(str));
 	}
-	//TODO: implemenent Element.setAttribute for IE
+	// TODO: implemenent Element.setAttribute for IE
 });
