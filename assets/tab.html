@@ -1,0 +1,11 @@
+---
+title: tab template
+---
+{% comment %} template for a tab at the top of the page {% endcomment %}
+<div id="tab-@name@" onmouseover="tabs.showTabList('@name@')" onmouseout="tabs.hideTabList('@name@')">
+	<a href="@link@">
+		{% include theme/tab.svg %}
+	</a>
+	<table id="tabList-@name@" style="display:none;position:absolute">
+	</table>
+</div>

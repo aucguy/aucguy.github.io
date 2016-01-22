@@ -1,0 +1,66 @@
+{% comment %} layout for all pages {% endcomment %}
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ page_title }}</title>
+	{% include js_utils.html %}
+	<script>
+	
+	{% comment %} Google Analytics Code {% endcomment %}
+	
+  	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  	ga('create', 'UA-59265400-1', 'auto');
+  	ga('send', 'pageview');
+	
+  	{% comment %} per-page scripts {% endcomment %} 
+	</script>
+	<script src="/scripts/tab.js"></script>
+	{{ scripts }}
+	<script>base.init()</script>
+	
+	{% comment %} CSS {% endcomment %}
+	<style>
+	#content
+	{
+		background: white;
+		position: absolute;
+		border: 5px groove gray;
+		left: 10%;
+		width: 80%
+	}
+	#tabs
+	{
+		position:relative;
+		left:7%;
+		z-index:3
+	}
+	</style>
+</head>
+<body background="/assets/background.svg">
+	<div id="content">
+		{% comment %} banner at top of page {% endcomment %}
+		<div style="text-align:center">
+			<img src="/assets/title.svg" alt="Aucguy's Website"></img>
+		</div>
+		
+		{% comment %} the tabs {% endcomment %}
+		<div id="tabs">
+			{% include theme/tab.html name="Blog" link="/" list="" %}
+			{% capture list %}
+				{% include theme/listitem.html name="spc" link="/projects/spc.html" %}
+			{% endcapture %} 
+			{% include theme/tab.html name="Projects" link="/projects/" list=list %}
+			{% include theme/tab.html name="About" link="/about.html" %}
+		</div>
+		
+		{% comment %} actual content {% endcomment %}
+		<div class="midsection">
+			{{ include.midsection }}
+		</div>
+	</div>
+</body>
+</html>

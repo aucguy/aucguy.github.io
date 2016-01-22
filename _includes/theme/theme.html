@@ -1,0 +1,92 @@
+{% comment %} layout for all pages {% endcomment %}
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ page_title }}</title>
+	{% include js_utils.html %}
+	<script>
+	
+  	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  	ga('create', 'UA-59265400-1', 'auto');
+  	ga('send', 'pageview');
+	
+  	{% comment %} per-page scripts {% endcomment %} 
+	</script>
+	<script src="/scripts/tab.js"></script>
+	<script>
+		globalConfig.tabs = {
+			tabs : [
+			        {
+			    		name: "Blog",
+			    		link: "/index.html"
+			    	},
+			   		{
+			    		name: "Projects",
+			    		link: "/projects/index.html",
+			    		items: [
+			    	    	{
+			    				name: "spc",
+			    				link: "/projects/spc.html"
+			    			},
+			    			{
+			    				name: "Wave Demo",
+			    				link: "/projects/wavedemo/index.html"
+			    			},
+			    			{
+			    				name: "Minion Army",
+			    				link: "/projects/LD33/run.html"
+			    			}
+			    		]
+			   		},
+			   		{
+			   			name: "About",
+			   			link: "/about.html"
+			   		}
+				]
+		}
+	</script>
+	{{ scripts }}
+	<script>base.init()</script>
+	
+	{% comment %} CSS {% endcomment %}
+	<style>
+	#content
+	{
+		background: white;
+		position: absolute;
+		border: 5px groove gray;
+		left: 10%;
+		width: 80%
+	}
+	#tabs
+	{
+		position:relative;
+		left:7%;
+		z-index:3
+	}
+	</style>
+</head>
+<body background="/assets/background.svg" onload="tabs.loadTabs();">
+	<div id="content">
+		{% comment %} banner at top of page {% endcomment %}
+		<div style="text-align:center">
+			<img src="/assets/title.svg" alt="Aucguy's Website"></img>
+		</div>
+		
+		{% comment %} the tabs {% endcomment %}
+		<table id="tabs">
+			<tr id="tabsrow">
+			</tr>
+		</table>
+		
+		{% comment %} actual content {% endcomment %}
+		<div class="midsection">
+			{{ include.midsection }}
+		</div>
+	</div>
+</body>
+</html>

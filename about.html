@@ -1,0 +1,15 @@
+---
+title: about
+---
+
+{% capture midsection %}
+<div style="position:relative;left:2%">
+{% markdown %}
+This is just some random guy\'s website. What I just said is definitely not shady not all.
+
+This also uses Google analytics. There is a add-on for most browsers in use [here](https://tools.google.com/dlpage/gaoptout) (developed by google).
+{% endmarkdown %}
+</div>
+{% endcapture %}
+
+{% include theme/theme.html page_title="About" midsection=midsection %}
