@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.github.aucguy.pluginWrapper</groupId>
+  <artifactId>PluginWrapper</artifactId>
+  <versioning>
+    <release>0.0.0</release>
+    <versions>
+      <version>0.0-SNAPSHOT</version>
+      <version>0.0.0</version>
+    </versions>
+    <lastUpdated>20160124203646</lastUpdated>
+  </versioning>
+</metadata>

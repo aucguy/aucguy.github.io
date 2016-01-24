@@ -1,2 +1,3 @@
 # aucguy.github.io
-Just a personal website
+aucguy's website
+Development stuff. The generated _site folder is pushed to the master branch for serving.
