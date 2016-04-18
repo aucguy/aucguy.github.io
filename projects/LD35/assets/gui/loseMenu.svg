@@ -25,8 +25,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.90126756"
-     inkscape:cx="107.93848"
+     inkscape:zoom="0.53332779"
+     inkscape:cx="236.32656"
      inkscape:cy="160.22788"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -55,13 +55,13 @@
      id="layer1"
      transform="translate(0,-652.36231)">
     <rect
-       style="opacity:1;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:3.44800425;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:3.0508616;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4136"
-       width="311.31384"
-       height="121.89122"
-       x="154.83823"
-       y="871.43933"
-       onclick="changeState playState" />
+       width="328.58618"
+       height="90.413025"
+       x="147.13957"
+       y="882.49091"
+       onclick="fade out up playState" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:6.08471346px;line-height:161.00000143%;font-family:Sans;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -78,14 +78,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:6.08471346px;line-height:161.00000143%;font-family:Sans;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="287.76599"
+       x="297.28397"
        y="826.71283"
        id="text4138-3"
        sodipodi:linespacing="161%"
        transform="scale(1.0506476,0.95179392)"><tspan
          sodipodi:role="line"
          id="tspan4140-1"
-         x="287.76599"
+         x="297.28397"
          y="826.71283"
          style="font-size:60.84713745px;fill:#000000;fill-opacity:1">You Lose!</tspan></text>
     <text
