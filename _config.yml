@@ -5,3 +5,8 @@ defaults:
       type: "posts" # previously `post` in Jekyll 2.2.
     values:
       layout: "default"
+      
+collections:
+  posts:
+    output: true
+    permalink: posts//:categories/:year/:month/:day/:title.html

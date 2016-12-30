@@ -1,0 +1,17 @@
+#testing syntax
+func selectLevel x y:
+  label (++ selectLevel (anonymousName)):
+    options:
+      option (++ goToLevel x) (+ "Go To Level" x)
+      option (++ goToLevel y) (+ "Go To Level" y)
+
+label climax:
+  options:
+    option killNC "shoot him"
+    option letNCGo "do nothing"
+
+selectLevel 1 2
+
+goto start
+
+#I might also need a fork function

@@ -1,0 +1,83 @@
+#show the player the character's profession and basic operation.
+#also demonstrate what this language can do
+label start:
+  test (call (+ foo "hello"))
+  fork:
+    animation "<guy 1>" "walkIn"
+  animation "<guy 2>" "walkIn"
+  dialog "<guy 1>" "Floor 5 please."
+  options:
+    option (goToFloor 5 something else) "Go To Floor 5."
+  fork:
+    animation "<guy 1>" "walkOut"
+  animation "<guy 2>" "walkOut"
+  goto meetNiceGuy
+
+label meetNiceGuy:
+  animation "<nice guy>" "walkIn"
+  dialog "<nice guy>" "How you doing?"
+  options:
+    option pass "Good, what about you?" #show multiple options
+    option pass "Not much"
+  dialog "<nice guy>" "Not much for me either. Just the usual dry paper work."
+  dialog "<nice guy>" "John's having me file accounting stuff. Not very exciting. Anything exciting for you?"
+  dialog "main" "You mean pulling levers and pressing buttons all day long is exciting?"
+  dialog "<nice guy>" "At least you get to talk to people."
+  dialog "main" "That 'people' is a group that mainly consists of one person: you."
+  dialog "<nice guy>" "That's a shame. See you around then."
+  animation "<nice guy>" "walkOut"
+
+label clipjointSmalltalk:
+  #maybe put some other stuff here to not overwhelm at first
+  dialog "<guy 2>" "What happened to him?"
+  dialog "<guy 1>" "About what?" #In case the player didn't catch the visual clue
+  dialog "<guy 2>" "Uh... The black eye."
+  dialog "<guy 1>" "<person> walked over since he was parched. Asks for one or two."
+  dialog "<guy 1>" "An hour later the guys who run the place start demanding the cost of nine or ten."
+  dialog "<guy 1>" "Being <person> he refused. The man behind the counter gave him a black eye, along with some other marks."
+  dialog "<guy 1>" "Comes home at two, probably with less liquid in him than he had to begin with."
+  dialog "<guy 1>" "When <person's wife> saw him see asked a few questions and punched in the three numbers every clip joint has nightmares about."
+  dialog "<guy 1>" "Next thing you know there's a lot more black eyes going around from people in uniforms."
+  dialog "<guy 1>" "You know, usual clip joint stuff"
+  dialog "<guy 2>" "... ok then."
+  dialog "<guy 1>" "There's a whole world out there. Just promise me you'll stay away from those certain things."
+  goto <something else>
+
+label clipjointDiscovery:
+  dialog "<criminal 1>" "You got the briefcase out?"
+  dialog "<criminal 2>" "It was a long shot, but yah."
+  dialog "<criminal 1>" "Good. Who the hell tattle talled on us anyway"
+  dialog "<criminal 2>" "Not a clue. I would bring him to the hospital along with everybody else in a heartbeat."
+  dialog "<criminal 1>" "I bet he's already there."
+  dialog "<criminal 2>" "Define irony: people meant to enforce the law break it."
+  goto <something else>
+
+label victimWithClipOwner:
+  animation "clipOwner" "lookLeft"
+  expression "clipOwner" "!"
+  animation "clipOwner" "walkOut"
+  options:
+    option tellVictim "Say, 'A word of advice; that guy is the owner of the clip joint and he's out to get you.'"
+    option letVictimGo "Do nothing"
+
+label tellVictim:
+  dialog "main" "A word of advice; that guy is the owner of the clip joint and he's out to get you."
+  dialog "victim" "thanks for telling me; I'll be on the look out"
+  animation "victim" "walkOut"
+  
+label letVictimGo:
+  dialog "<nice guy>" "<victim> won't be coming back for a while."
+  dialog "main" "why?"
+  dialog "<nice guy>" "He was found on the side of the street beat up."
+  
+label yourGfDead:
+  dialog "bff" "main, there's something important I have to tell you..."
+  dialog "main" "What?"
+  dialog "bff" "Gf went to a speakeasy on <street>..."
+  dialog "main" "And?"
+  dialog "bff" "Wasn't just a speakeasy; it was a clip joint - they went a little too far when she refused to hand over the money."
+  dialog "bff" "She's dead now."
+  dialog "main" "..."
+  dialog "bff" "This wasn't the best of places to tell you this, but I thought I should have told you as soon as possible."
+  dialog "bff" "I'm sorry"
+  goto <something else>
