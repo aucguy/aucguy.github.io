@@ -18,9 +18,15 @@ module Jekyll
   
   class CategoryPageGenerator < Generator
     safe true
-		
+    
     def generate(site)
-      posts = self.sortPosts(site.posts)
+      Jekyll::Hooks.register :site, :post_render do |site|
+        self.doGen(site)
+      end
+    end
+    
+    def doGen(site)
+      posts = self.sortPosts(site.posts.docs)
       indexes = self.genIndexes(site, posts)
       for page in self.createPages(site, indexes)
         self.addPage(site, page)
@@ -31,6 +37,7 @@ module Jekyll
     def sortPosts(posts)
       sorted = []
       for placing in posts
+        puts(placing.layout)
         oldest = true
         for i in 0..sorted.length-1
           checking = sorted[i]
@@ -68,9 +75,9 @@ module Jekyll
     		if post.data.has_key?('category')
     			category = post.data['category']
     			if indexes.has_key?(category)
-            indexes[category].push(post.url)
+                  indexes[category].push(post)
     			else
-    			  indexes[category] = [post.url]
+    			  indexes[category] = [post]
     			end
     		end
     	end
@@ -96,7 +103,7 @@ module Jekyll
             if post_index >= posts.length
               break
             end
-            content += posts[post_index] + "\n"
+            content += posts[post_index].content
             post_index += 1
           end
           pages.push(CategoryPage.new(site, category+"-"+index_count.to_s, content))
@@ -104,5 +111,5 @@ module Jekyll
       end
       return pages
     end
- 	end
+  end
 end

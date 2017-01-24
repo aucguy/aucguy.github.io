@@ -1,0 +1,23 @@
+<div>
+	{% assign paginator = include.paginator %}
+	
+	<div id="indexData" style="display:none">
+		{
+			{% if paginator.next_page %}
+				"nextPage": "{{ paginator.next_page_path }}"
+			{% else %}
+				"nextPage": "null"
+			{% endif %}
+		}
+	</div>
+	
+	{% for post in paginator.posts %}
+		{% include post.html title=post.title date=post.date content=post.content %}
+	{% endfor %}
+    
+	{% if paginator.next_page %}
+		<noscript>
+			<a id="nextPage" href="{{ paginator.next_htmlpage_path }}">Page {{ paginator.next_page }} of category {{ paginator.category }}.</a>
+		</noscript>
+	{% endif %}
+</div>

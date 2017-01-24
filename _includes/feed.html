@@ -1,22 +1,24 @@
 {% comment %} page layout for feed pages. These view posts {% endcomment %}
+{% get_paginate main 3 1 %}
 
 {{ include.section_header }}
 
 {% capture midsection %}
 	<div id="posts">
+		{% include indexes.html paginator=page.paginator %}
 	</div>
-	
-	{% comment %} load more posts {% endcomment %}
-	<p>
-		<button type="button" onclick="website.loadPosts('{{ include.category }}', 3)">load more posts</button>
-	</p>
+	<div id="loadButton" style="display:none;position:relative;left:10%;margin:5px">
+		<button type="button" onclick="website.loadPosts()">load more posts</button>
+	</div>
 {% endcapture %}
 
 {% comment %} custom scripts {% endcomment %}
 {% capture scripts %}
 	{{ include.scripts }}
 	<script src="scripts/loadposts.js"></script>
-	<script>globalConfig.feedCategory="{{ include.category }}"</script>
+	<script>
+		globalConfig.feedCategory = "{{ include.category }}";
+	</script>
 {% endcapture %}
 
 {% include theme/theme.html page_title=includes.page_title midsection=midsection scripts=scripts %}

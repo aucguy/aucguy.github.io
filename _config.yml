@@ -1,3 +1,9 @@
+custom_paginate:
+  main:
+    posts_per_page: 3
+    path: indexes/main:num.html
+    html_path: htmlindex/main:num.html
+
 defaults:
   -
     scope:

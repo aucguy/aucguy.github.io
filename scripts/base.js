@@ -6,10 +6,10 @@ var base = new Object();
 		for (var i = 0; i < hooked.length; i++) {
 			clearInterval(hooked[i]);
 		}
-		console.error(error.name + ": " + error.message);
+		//console.error(error.name + ": " + error.message);
 		console.error(error.stack);
 
-		alert(error.name + ": " + error.message + "\n" + error.stack);
+		//alert(error.name + ": " + error.message + "\n" + error.stack);
 	}
 	module.onError = onError;
 
@@ -35,23 +35,20 @@ var base = new Object();
 	function loadModules() {
 		for (var i = 0; i < modules.length; i++) {
 			var obj = modules[i];
-			if (obj.name == "?global") {
-				var mod = global;
-				obj.module(mod);
-			} else if (obj.name == "?thisIsWindow") {
+			if (obj.name == '?global') {
+				obj.module(global);
+			} else if (obj.name == '?thisIsWindow') {
 				obj.module.call(global);
 			} else {
 				var mod = global[obj.name];
 				if (typeof mod == 'undefined') {
-					var mod = new Object();
+					var mod = {};
 					global[obj.name] = mod;
 				}
 				obj.module(mod);
 			}
 		}
-		;
 	}
-	;
 
 	module.registerModule = function(name, mod) {
 		modules.push({
