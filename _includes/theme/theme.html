@@ -8,55 +8,9 @@
   	{% comment %} per-page scripts {% endcomment %} 
 	</script>
 	<script src="/scripts/tab.js"></script>
-	<script>
-		globalConfig.tabs = {
-			tabs : [
-			        {
-			    		name: "Blog",
-			    		link: "/index.html"
-			    	},
-			   		{
-			    		name: "Projects",
-			    		link: "/projects/index.html",
-			    		items: [
-			    	    	{
-			    				name: "spc",
-			    				link: "/projects/spc.html"
-			    			},
-			    			{
-			    				name: "Wave Demo",
-			    				link: "/projects/wavedemo/index.html"
-			    			},
-			    			{
-			    				name: "Minion Army",
-			    				link: "/projects/LD33/run.html"
-			    			},
-			    			{
-			    				name: "Color Shape Stack",
-			    				link: "/projects/LD35/view.html"
-			    			},
-			    			{
-			    				name: "Camp Fire Simulator 2016",
-			    				link: "/projects/LD36/view.html"
-			    			},
-
-			    			{
-			    				name: "Turtle Fork",
-			    				link: "/projects/LD37/view.html"
-			    			}
-			    		]
-			   		},
-			   		{
-			   			name: "About",
-			   			link: "/about.html"
-			   		}
-				]
-		}
-	</script>
 	{{ scripts }}
 	<script>base.init()</script>
 	
-	{% comment %} CSS {% endcomment %}
 	<style>
 	#content
 	{
@@ -74,7 +28,7 @@
 	}
 	</style>
 </head>
-<body background="/assets/background.svg" onload="tabs.loadTabs();">
+<body background="/assets/background.svg">
 	<div id="content">
 		{% comment %} banner at top of page {% endcomment %}
 		<div style="text-align:center">
@@ -84,6 +38,16 @@
 		{% comment %} the tabs {% endcomment %}
 		<table id="tabs">
 			<tr id="tabsrow">
+				{% comment %}
+					The variables are assigned prior to being passed in since include has limited syntax
+				{% endcomment %}
+				
+				{% for tab in site.tabs.items %}
+					{% assign tabname = tab[0] %}
+					{% assign link = tab[1].link %}
+					{% assign items = tab[1].items %}
+					{% include theme/tab.html name=tabname link=link items=items %}
+				{% endfor %}
 			</tr>
 		</table>
 		

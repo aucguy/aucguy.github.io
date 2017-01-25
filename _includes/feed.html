@@ -16,9 +16,6 @@
 {% capture scripts %}
 	{{ include.scripts }}
 	<script src="scripts/loadposts.js"></script>
-	<script>
-		globalConfig.feedCategory = "{{ include.category }}";
-	</script>
 {% endcapture %}
 
 {% include theme/theme.html page_title=includes.page_title midsection=midsection scripts=scripts %}

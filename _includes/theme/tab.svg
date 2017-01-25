@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+{% raw %}<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -97,11 +97,11 @@
          sodipodi:role="line"
          id="tspan2985"
          x="69.838348"
-         y="1028.4595">@name@</tspan></text>
+         y="1028.4595">{{ page.tab.name }}</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.5165599px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter2999)"
        d="m 141.74172,1046.1039 -18.23696,-47.7108 -121.5815,0 17.179994,47.7108 z"
        id="path2987"
        inkscape:connector-curvature="0" />
   </g>
-</svg>
+</svg>{% endraw %}

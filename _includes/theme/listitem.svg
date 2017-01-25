@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+{% raw %}<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -103,6 +103,6 @@
          sodipodi:role="line"
          id="tspan2989"
          x="70.521759"
-         y="1027.0204">&gt; @name@</tspan></text>
+         y="1027.0204">&gt; {{ page.tab.name }}</tspan></text>
   </g>
-</svg>
+</svg>{% endraw %}

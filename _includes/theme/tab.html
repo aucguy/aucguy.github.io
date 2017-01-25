@@ -1,0 +1,18 @@
+{% comment %} template for a tab at the top of the page {% endcomment %}
+<td>
+	<div id="tab-{{ include.name }}" onmouseover="tabs.showTabList('{{ include.name }}')" onmouseout="tabs.hideTabList('{{ include.name }}')">
+		<a href="{{ include.link }}">
+			<img src="/assets/tabs/tab-{{ include.name }}.svg"></img>
+		</a>
+		<table id="tabList-{{ include.name }}" style="display:none;position:absolute">
+			{% if include.items %}
+				{% assign tabname = include.name %}
+				{% for item in items %}
+					{% assign name = item[0] %}
+					{% assign link = item[1].link %}
+					{% include theme/listitem.html tabname=tabname name=name link=link %}
+				{% endfor %}
+			{% endif %}
+		</table>
+	</div>
+</td>

@@ -4,6 +4,33 @@ custom_paginate:
     path: indexes/main:num.html
     html_path: htmlindex/main:num.html
 
+tabs:
+  tab_path: assets/tabs/tab-:name.svg
+  tab_template: theme/tab.svg
+  item_path: assets/tabs/item-:tab-:name.svg
+  item_template: theme/listitem.svg
+  
+  items:
+    Blog:
+      link: /index.html
+    Projects:
+      link: /projects/index.html
+      items:
+        spc:
+          link: /projects/spc.html
+        Wave Demo:
+          link: /projects/wavedemo/index.html
+        Minion Army:
+          link: /projects/LD33/run.html
+        Color Shape Stack:
+          link: /projects/LD35/view.html
+        Camp Fire Simulator 2016:
+          link: /projects/LD36/view.html
+        Turtle Fork:
+          link: /projects/LD37/view.html
+    About:
+      link: /about.html
+
 defaults:
   -
     scope:
