@@ -1,8 +1,8 @@
 custom_paginate:
   main:
     posts_per_page: 3
-    path: indexes/main:num.html
-    html_path: htmlindex/main:num.html
+    path: paginates/main:num.html
+    html_path: htmlPaginates/main:num.html
 
 tabs:
   tab_path: assets/tabs/tab-:name.svg
@@ -30,6 +30,13 @@ tabs:
           link: /projects/LD37/view.html
     About:
       link: /about.html
+
+jekyll-press:
+    exclude: '/projects/LD33/scripts/canvg/svgs/**'
+    js_options: {}
+    css_options: {}
+    html_options: {}
+    enabled: true
 
 defaults:
   -

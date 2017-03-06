@@ -1,2 +1,5 @@
 source 'https://rubygems.org'
 gem 'github-pages'
+gem 'multi_css'
+gem 'multi_js'
+gem 'nokogiri'
