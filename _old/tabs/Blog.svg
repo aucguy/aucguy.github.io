@@ -1,5 +1,0 @@
----
-title: blog tab
----
-
-{% include theme/tab.svg name="Blog" %}

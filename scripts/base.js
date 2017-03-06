@@ -1,15 +1,9 @@
-var base = new Object();
+var base = {};
 (function(module, global) {
-	global.globalConfig = {};
-	var hooked = [];
+	var errorThrown = null;
 	function onError(error) {
-		for (var i = 0; i < hooked.length; i++) {
-			clearInterval(hooked[i]);
-		}
-		//console.error(error.name + ": " + error.message);
+		errorThrown = error;
 		console.error(error.stack);
-
-		//alert(error.name + ": " + error.message + "\n" + error.stack);
 	}
 	module.onError = onError;
 
@@ -61,37 +55,11 @@ var base = new Object();
 		runAndReportErrors(loadModules);
 	};
 
-	module.setInterval = function(func, inter) {
-		var r = setInterval(function() {
-			runAndReportErrors(func);
-		}, inter);
-		hooked.push(r);
-		return r;
-	};
-
-	module.clearInterval = function(int) {
-		clearInterval(int);
-		hooked.splice(hooked.indexOf(int), 1);
-	};
-
 	module.external = function(func) {
 		return function() {
-			runAndReportErrors(func, null, arguments);
+			if(errorThrown === null) {
+				runAndReportErrors(func, null, arguments);
+			}
 		};
 	}
 })(base, this);
-
-base.registerModule('?global', function(module) {
-	module.extend = function(base, sub) {
-		sub.prototype = Object.create(base.prototype);
-		sub.prototype.constructor = sub;
-		sub.super = base.prototype;
-		return sub;
-	};
-
-	/* parseInt doesn't handle exponents */
-	module.safeParseInt = function(str) {
-		return Math.round(parseFloat(str));
-	}
-	// TODO: implemenent Element.setAttribute for IE
-});

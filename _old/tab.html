@@ -1,9 +1,0 @@
-{% comment %} a tab at the top of the page {% endcomment %}
-<span id="tab-{{ include.name }}" onmouseover="website.showTabList('{{ include.name }}')" onmouseout="website.hideTabList('{{ include.name }}')">
-	<a href="{{ include.link }}">
-		<img src="/assets/tabs/{{ include.name }}.svg" alt="{{ include.name }}" style="border:0" onload="website.initTabList('{{ include.name }}')"></img>
-	</a>
-	<span id="tabList-{{ include.name }}" style="display:none;position:absolute">
-		{{ include.list }}
-	</span>
-</span>

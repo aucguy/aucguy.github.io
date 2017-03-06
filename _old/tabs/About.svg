@@ -1,5 +1,0 @@
----
-title: about tab
----
-
-{% include theme/tab.svg name="About" %}
