@@ -26,9 +26,8 @@ module Jekyll
     prepend StaticFileExt
   end
   
-  def self.exclude?(site, dest_path)
+  def self.exclude?(dest_path, exclude)
     res = false
-    exclude = site.config['jekyll-press'] && site.config['jekyll-press']['exclude']
     if exclude
       if exclude.is_a? String
         exclude = [exclude]
@@ -114,7 +113,8 @@ module Jekyll
       content = File.read(page.path)
     end
     
-    return if content.length == 0 or exclude?(page.site, dest_path)
+    return if content.length == 0 or exclude?(page.site, dest_path,
+      site.config['jekyll-press'] && site.config['jekyll-press']['exclude'])
     checksum = Digest::SHA2.hexdigest(content)
     return if checksum == $min_checksum[page.path]
     $min_checksum[page.path] = checksum

@@ -36,7 +36,10 @@ jekyll-press:
     js_options: {}
     css_options: {}
     html_options: {}
-    enabled: true
+    enabled: false
+
+ignore-file:
+    exclude: '**/svgo.yml'
 
 defaults:
   -
