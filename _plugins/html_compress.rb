@@ -3,8 +3,6 @@ require 'multi_js'
 require 'multi_css'
 
 module Jekyll
-  CDATA_NAMES = ['script', 'style', 'pre', 'textarea']
-  
   class FilterSax < Nokogiri::XML::SAX::Document
     attr_accessor :content
     
@@ -27,7 +25,11 @@ module Jekyll
     end
     
     def characters(text)
-      @content += text.gsub(/[ \t\n\r]+/, ' ').encode(:xml => :text)
+      if @stack.include?('pre') or @stack.include?('textarea')
+        @content += text.encode(:xml => :text)
+      else
+        @content += text.gsub(/[ \t\n\r]+/, ' ').encode(:xml => :text)
+      end
     end
     
     def cdata_block(text)
