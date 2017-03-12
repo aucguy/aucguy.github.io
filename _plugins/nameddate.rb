@@ -8,12 +8,10 @@ module Jekyll
     end
     def render(context)
       begin
-        content = super
-        date = content.split(' ')[0];
-        year, month, day = date.split('-')
-        return MONTHS[month.to_i-1]+" "+day+", "+year
+        year, month, day = super.split(' ')[0].split('-')
+        "#{MONTHS[month.to_i-1]} #{day}, #{year}"
       rescue
-        return ""
+        ""
       end
     end
   end
