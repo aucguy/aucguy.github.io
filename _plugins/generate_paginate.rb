@@ -14,7 +14,25 @@ module Jekyll
       @custom_data = {}
       
       self.process(@name)
-      self.read_yaml(File.join(@base, "_layouts"), "indexes.html")
+
+      layout = File.join(@base, '_layouts', 'paginate.html')
+      header_mark = /^---/
+      header_length = 4
+
+      if File.file?(layout)
+        content = File.read(layout)
+        index = content.index(header_mark)
+        if not index.nil?
+          index = content.index(header_mark, index + header_length)
+          if not index.nil?
+            content = content[index + header_length..content.length]
+          end
+        end
+      else
+        content = ""
+      end
+      self.content = content
+      self.data ||= {}
       
       @custom_data['paginator'] = pager.to_liquid
       @custom_data.each do |key, value|
@@ -33,7 +51,7 @@ module Jekyll
       @name = File.basename(path)
       
       self.process(@name)
-      self.read_yaml(File.join(@base, "_layouts"), "indexesHtml.html")
+      self.read_yaml(File.join(@base, '_layouts'), 'paginateHtml.html')
       self.data['index_page'] = body_page.content
       body_page.custom_data.each do |key, value|
         if not self.data.has_key?(key)
@@ -171,7 +189,7 @@ module Jekyll
     # all_posts - The Array of all the site's Posts.
     # num_pages - The Integer number of pages or nil if you'd like the number
     #             of pages calculated.
-    def initialize(category, page, all_posts, num_pages = nil, format, htmlformat, posts_per_page)
+    def initialize(category, page, all_posts, num_pages, format, htmlformat, posts_per_page)
       @page = page
       @category = category
       @per_page = posts_per_page
@@ -229,6 +247,7 @@ module Jekyll
       end
     end
     
+    #TODO check argument correctness
     def doRender(context)
       parts = @text.split(' ').reject { |c| c.empty? }
       if parts.size < 3

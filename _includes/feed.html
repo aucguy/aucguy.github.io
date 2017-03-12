@@ -5,17 +5,19 @@
 
 {% capture midsection %}
 	<div id="posts">
-		{% include indexes.html paginator=page.paginator %}
+		{% include paginate.html paginator=page.paginator %}
 	</div>
+	<p></p>
 	<div id="loadButton" style="display:none;position:relative;left:10%;margin:5px">
-		<button type="button" onclick="website.loadPosts()">load more posts</button>
+		<button type="button" onclick="posts.loadPosts()">load more posts</button>
 	</div>
+	<p></p>
 {% endcapture %}
 
 {% comment %} custom scripts {% endcomment %}
 {% capture scripts %}
 	{{ include.scripts }}
-	<script src="scripts/loadposts.js"></script>
+	<script src="scripts/posts.js"></script>
 {% endcapture %}
 
 {% include theme/theme.html page_title=includes.page_title midsection=midsection scripts=scripts %}

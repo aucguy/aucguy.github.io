@@ -1,4 +1,4 @@
-base.registerModule('website', function(module) {
+base.registerModule('posts', function(module) {
 	var nextPage = null;
 	var parser = new DOMParser();
 
@@ -38,4 +38,4 @@ base.registerModule('website', function(module) {
 		setNextPage(document);
 		document.getElementById('loadButton').style.display = 'inline';
 	}));
-})
+});
