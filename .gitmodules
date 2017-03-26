@@ -1,0 +1,12 @@
+[submodule "_repos/Ludum-Dare-33"]
+	path = _repos/Ludum-Dare-33
+	url = https://github.com/aucguy/Ludum-Dare-33.git
+[submodule "_repos/Ludum-Dare-35"]
+	path = _repos/Ludum-Dare-35
+	url = https://github.com/aucguy/Ludum-Dare-35.git
+[submodule "_repos/Ludum-Dare-36"]
+	path = _repos/Ludum-Dare-36
+	url = https://github.com/aucguy/Ludum-Dare-36.git
+[submodule "_repos/Ludum-Dare-37"]
+	path = _repos/Ludum-Dare-37
+	url = https://github.com/aucguy/Ludum-Dare-37.git

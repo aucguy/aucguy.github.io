@@ -7,16 +7,42 @@ require 'multi_css'
 require 'multi_js'
 
 module Jekyll
+  BINARY_FILES = ['.png']
+
   $min_checksum = {}
   $static_output = {}
+
+  def self.file_mode(path)
+    if BINARY_FILES.include?(File.extname(path))
+      'b'
+    else
+      ''
+    end
+  end
   
+  def self.read_file(path)
+    content = nil
+    File.open(path, 'r' + file_mode(path)) do |file|
+      content = file.read()
+    end
+    return content
+  end
+
+  def self.write_file(path, content)
+    File.open(path, 'w' + file_mode(path)) do |file|
+      file.write(content)
+    end
+  end
+
   module StaticFileExt
     def write(dest)
+      return if @path.nil?
       if $static_output[@path].nil?
         super
       else
         dest_path = destination(dest)
-        File.write(dest_path, $static_output[@path])
+        FileUtils.mkdir_p(File.dirname(dest_path))
+        Jekyll::write_file(dest_path, $static_output[@path])
       end
     end
   end
@@ -81,15 +107,21 @@ module Jekyll
       config = ''
     end
     
-    result = nil
-    Open3.popen3("node_modules/.bin/svgo.cmd #{config} -i - -o -") do |stdin, stdout, stderr, wait_thr|
+    return runCmd("node_modules/.bin/svgo.cmd #{config} -i - -o -", content)
+  end
+
+  def self.runCmd(cmd, input)
+    output = nil
+    Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
       wait_thr.pid
-      stdin.write(content)
+      if not input.nil?
+        stdin.write(input)
+      end
       stdin.close
-      result = stdout.read
+      output = stdout.read
       wait_thr.value
     end
-    return result
+    return output
   end
   
   def self.parse_error(path, content, e)
@@ -109,12 +141,14 @@ module Jekyll
     
     if page.respond_to?('content')
       content = page.content
+    elsif page.is_a?(BuiltPage)
+      content = $static_output[page.path]
     else
       content = File.read(page.path)
     end
     
-    return if content.length == 0 or exclude?(page.site, dest_path,
-      site.config['jekyll-press'] && site.config['jekyll-press']['exclude'])
+    return if content.length == 0 or exclude?(dest_path,
+      page.site.config['jekyll-press'] && page.site.config['jekyll-press']['exclude'])
     checksum = Digest::SHA2.hexdigest(content)
     return if checksum == $min_checksum[page.path]
     $min_checksum[page.path] = checksum

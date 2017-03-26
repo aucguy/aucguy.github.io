@@ -1,8 +1,0 @@
-repeat 4:
-  forward
-
-left
-repeat 9:
-  forward
-
-right

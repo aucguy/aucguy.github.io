@@ -1,4 +1,1 @@
 enabled: false
-plugins:
-  - cleanupIDs: false
-  - collapseGroups	: false

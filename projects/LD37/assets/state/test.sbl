@@ -1,8 +1,0 @@
-label $skip:
-  print "don't run me!!!"
-
-fork:
-  print "sometimes"
-  
-print "hello world"
-goto skip
