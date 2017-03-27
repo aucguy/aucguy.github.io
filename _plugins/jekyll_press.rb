@@ -89,7 +89,7 @@ module Jekyll
     return content if page =~ /.min.html$/
     return compress_html(page.site, content)
   end
-  
+
   def self.output_svg(path, page, content)
     return content if page =~ /.min.svg$/
     options = page.dir
@@ -107,6 +107,11 @@ module Jekyll
     end
     
     return runCmd("node_modules/.bin/svgo.cmd #{config} -i - -o -", content)
+  end
+
+  def self.output_json(path, page, content)
+    return content if page =~ /.min.json$/
+    return JSON.dump(JSON.load(content))
   end
 
   def self.runCmd(cmd, input)
@@ -161,6 +166,8 @@ module Jekyll
         return output_html(dest_path, page, content)
       when '.svg'
         return output_svg(dest_path, page, content)
+      when '.json'
+        return output_json(dest_path, page, content)
       else
         return nil
     end
