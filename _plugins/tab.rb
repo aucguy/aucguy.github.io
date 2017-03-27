@@ -18,16 +18,6 @@ module Jekyll
   
   class TabGenerator < Generator
     def generate(site)
-      begin
-        doGen(site)
-      rescue Exception => e
-        puts(e.message)
-        puts(e.backtrace)
-        raise e
-      end
-    end
-    
-    def doGen(site)
       if site.config.has_key?('tabs')
         tab_config = site.config['tabs']
         tab_path = tab_config['tab_path']

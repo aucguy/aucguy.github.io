@@ -167,26 +167,20 @@ module Jekyll
   end
   
   def self.doCompress(page)
-    begin
-      if page.site.config.key?('jekyll-press') and page.site.config['jekyll-press'].key?('enabled')
-        return if not page.site.config['jekyll-press']['enabled']
+    if page.site.config.key?('jekyll-press') and page.site.config['jekyll-press'].key?('enabled')
+      return if not page.site.config['jekyll-press']['enabled']
+    end
+    content = compress(page)
+    if not content.nil?
+      if page.respond_to?('content')
+        page.content = content
       end
-      content = compress(page)
-      if not content.nil?
-        if page.respond_to?('content')
-          page.content = content
-        end
-        if page.respond_to?('output')
-          page.output = content
-        end
-        if page.is_a?(StaticFile)
-          $static_output[page.path] = content
-        end
+      if page.respond_to?('output')
+        page.output = content
       end
-    rescue Exception => e
-      puts(e.message)
-      puts(e.backtrace)
-      raise e
+      if page.is_a?(StaticFile)
+        $static_output[page.path] = content
+      end
     end
   end
 end

@@ -83,18 +83,8 @@ module Jekyll
     end
     store_config(site, new_config)
   end
-
-  def self.doBuild(site)
-    begin
-      build(site)
-    rescue Exception => e
-      puts(e.message)
-      puts(e.backtrace)
-      raise e
-    end
-  end
 end
 
 Jekyll::Hooks.register :site, :post_read do |site|
-  Jekyll::doBuild(site)
+  Jekyll::build(site)
 end

@@ -237,18 +237,8 @@ module Jekyll
       @text = text
     end
     
-    def render(context)
-      begin
-        doRender(context)
-      rescue Exception => e
-        puts(e.message)
-        puts(e.backtrace)
-        raise e
-      end
-    end
-    
     #TODO check argument correctness
-    def doRender(context)
+    def render(context)
       parts = @text.split(' ').reject { |c| c.empty? }
       if parts.size < 3
         puts('not enough arguments for {% get_paginate %}')
