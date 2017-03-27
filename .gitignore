@@ -1,4 +1,5 @@
 .project
 .settings/
 _site/
+_config/
 node_modules/

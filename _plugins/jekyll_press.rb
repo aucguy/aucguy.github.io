@@ -29,6 +29,7 @@ module Jekyll
   end
 
   def self.write_file(path, content)
+    FileUtils.mkdir_p(File.dirname(path))
     File.open(path, 'w' + file_mode(path)) do |file|
       file.write(content)
     end
@@ -36,13 +37,11 @@ module Jekyll
 
   module StaticFileExt
     def write(dest)
-      return if @path.nil?
-      if $static_output[@path].nil?
+      if path.nil? or $static_output[path].nil?
         super
       else
         dest_path = destination(dest)
-        FileUtils.mkdir_p(File.dirname(dest_path))
-        Jekyll::write_file(dest_path, $static_output[@path])
+        Jekyll::write_file(dest_path, $static_output[path])
       end
     end
   end

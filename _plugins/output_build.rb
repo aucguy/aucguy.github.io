@@ -1,9 +1,8 @@
 require 'find'
+require 'yaml'
 
 module Jekyll
   class BuiltPage < StaticFile
-    #allows the setting of the @path property
-
     def initialize(site, source, path)
       super(site, source, File.dirname(path), File.basename(path))
     end
@@ -13,12 +12,58 @@ module Jekyll
     end
   end
 
+  def self.load_config(site)
+    if File.exist?('_config/output_build.yml')
+      return YAML.load(read_file(File.join(site.source, '_config/output_build.yml')))
+    else
+      return {}
+    end
+  end
+
+  def self.store_config(site, config)
+    write_file(File.join(site.source, '_config/output_build.yml'), YAML.dump(config))
+  end
+
+  def self.get_info(entry)
+    time = 0
+    files = []
+    Find.find(entry['dir']) do |file|
+      if File.file?(file) and not exclude?(file, entry['build'])
+        files << file
+        time = [time, File.stat(file).mtime.to_i].max
+      end
+    end
+    files.sort
+    #'|' is an invalid filename character on windows
+    return {
+      'last_time' => time,
+      'content_hash' => Digest::SHA2.hexdigest(files.join('|'))
+    }
+  end
+
+  def self.is_dirty(config, dir, info)
+    return true if not config.has_key?(dir)
+    info['last_time'] > config[dir]['last_time'] or info['content_hash'] != config[dir]['content_hash']
+  end
+
   def self.build(site)
+    config = load_config(site)
+    new_config = {}
+
     if site.config['output-build'] and site.config['output-build'].respond_to?('each')
       #iterate through each repository
       site.config['output-build'].each do |entry|
-        if entry.respond_to?('[]') and not entry['dir'].nil? and not entry['cmd'].nil? and not entry['build'].nil? and not entry['output'].nil?
-          system("chdir #{entry['dir']} & #{entry['cmd']}")
+        info = get_info(entry)
+        #why does this need to be in parenthesis in order towork?
+        valid = (entry.respond_to?('[]') and not entry['dir'].nil? and
+           not entry['cmd'].nil? and not entry['build'].nil? and
+           not entry['output'].nil?)
+
+        if valid
+          if is_dirty(config, entry['dir'], info)
+            system("chdir #{entry['dir']} & #{entry['cmd']}")
+          end
+
           build_dir = File.join(site.source, entry['dir'], entry['build'])
           #copy the files by registering them with the site
           Find.find(build_dir) do |file|
@@ -30,9 +75,13 @@ module Jekyll
               site.static_files << page
             end
           end
+          new_config[entry['dir']] = get_info(entry)
+        else
+         new_config[entry['dir']] = config[entry['dir']]
         end
       end
     end
+    store_config(site, new_config)
   end
 
   def self.doBuild(site)
