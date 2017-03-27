@@ -26,18 +26,25 @@ module Jekyll
 
   def self.get_info(entry)
     time = 0
-    files = []
+    files = DynamicArray.new
     Find.find(entry['dir']) do |file|
-      if File.file?(file) and not exclude?(file, entry['build'])
-        files << file
-        time = [time, File.stat(file).mtime.to_i].max
+      if exclude?(file, entry['exclude'])
+        Find.prune
+      end
+      if File.file?(file)
+        files.append(file)
+        mtime = File.mtime(file).to_i
+        if mtime > time
+          time = mtime
+        end
       end
     end
-    files.sort
+    file_list = files.to_array
+    file_list.sort
     #'|' is an invalid filename character on windows
     return {
       'last_time' => time,
-      'content_hash' => Digest::SHA2.hexdigest(files.join('|'))
+      'content_hash' => Digest::SHA2.hexdigest(file_list.join('|'))
     }
   end
 
@@ -55,9 +62,10 @@ module Jekyll
       site.config['output-build'].each do |entry|
         info = get_info(entry)
         #why does this need to be in parenthesis in order towork?
+        enabled = (entry['enabled'].nil? or entry['enabled'])
         valid = (entry.respond_to?('[]') and not entry['dir'].nil? and
            not entry['cmd'].nil? and not entry['build'].nil? and
-           not entry['output'].nil?)
+           not entry['output'].nil? and enabled)
 
         if valid
           if is_dirty(config, entry['dir'], info)
@@ -65,7 +73,6 @@ module Jekyll
           end
 
           build_dir = File.join(site.source, entry['dir'], entry['build'])
-          #copy the files by registering them with the site
           Find.find(build_dir) do |file|
             if File.file?(file)
               #file is the full path so it needs to be relativized with build_dir
