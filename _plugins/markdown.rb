@@ -1,5 +1,6 @@
 #from https://stackoverflow.com/questions/15917463/embedding-markdown-in-jekyll-html
 #answer by MisterMetaphor
+#a tag that converts markdown to html
 module Jekyll
   class MarkdownBlock < Liquid::Block
     def initialize(tag_name, text, tokens)

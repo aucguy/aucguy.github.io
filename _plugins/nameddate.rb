@@ -1,6 +1,7 @@
 MONTHS = ["January", "February", "March", "April", "May", "June", 
   "July", "August", "September", "October", "November", "December"];
 
+#converts a date with dashes to one with words
 module Jekyll
   class DateBlock < Liquid::Block
     def initialize(tag_name, text, tokens)

@@ -1,3 +1,4 @@
+#functions shared between plugins
 module Jekyll
   #files that are binary. More may be necessary
   BINARY_FILES = ['.png']

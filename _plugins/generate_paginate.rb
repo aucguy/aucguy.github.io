@@ -3,6 +3,8 @@
 
 module Jekyll
   #help from http://brizzled.clapper.org/blog/2010/12/20/some-jekyll-hacks/
+  #A page snippet that contains a fixed number of posts.
+  #These are loaded at separate times for pagination
   class IndexPage < Page
     attr_accessor :dir, :custom_data
     
@@ -11,7 +13,7 @@ module Jekyll
       @base = site.source
       @dir = File.dirname(path)
       @name = File.basename(path)
-      @custom_data = {}
+      @custom_data = {} #data that this page adds in
       
       self.process(@name)
 
@@ -19,7 +21,9 @@ module Jekyll
       header_mark = /^---/
       header_length = 4
 
+      #get the contents of the paginate layout
       if File.file?(layout)
+        #remove the front matter
         content = File.read(layout)
         index = content.index(header_mark)
         if not index.nil?
@@ -34,6 +38,7 @@ module Jekyll
       self.content = content
       self.data ||= {}
       
+      #setup the custom data and copy it into the actual page data
       @custom_data['paginator'] = pager.to_liquid
       @custom_data.each do |key, value|
         self.data[key] = value
@@ -43,46 +48,42 @@ module Jekyll
     end
   end
   
+  #A full page that contains a single IndexPage for javascriptless environments
   class HtmlPage < Page
-    def initialize(site, path, body_page)
+    def initialize(site, path, index_page)
       @site = site
       @base = site.source
       @dir = File.dirname(path)
       @name = File.basename(path)
       
       self.process(@name)
+      #load the page contents
       self.read_yaml(File.join(@base, '_layouts'), 'paginateHtml.html')
-      self.data['index_page'] = body_page.content
-      body_page.custom_data.each do |key, value|
+      self.data['index_page'] = index_page.content
+      #copy over the IndexPages's data
+      index_page.custom_data.each do |key, value|
         if not self.data.has_key?(key)
           self.data[key] = value
         end
       end
-      self.data['paginator']
       self.render(site.layouts, site.site_payload)
     end
   end
 
   module Generators
     class Pagination < Generator
-      def generate(site)
-        begin
-          doGen(site)
-        rescue Exception => e
-          puts(e.message)
-          puts(e.backtrace)
-          raise e
-        end
-      end
       
       # Generate paginated pages if necessary.
       #
       # site - The Site.
       #
       # Returns nothing.
-      def doGen(site)
+      def generate(site)
+        #check if the config exists
         if site.config.has_key?('custom_paginate') and site.config['custom_paginate'].respond_to?('each')
+          #iterate over all the categories
           site.config['custom_paginate'].each do |category, data|
+            #check if the category config is valid
             if data.respond_to?('has_key?') and data.has_key?('posts_per_page') and data.has_key?('path') and data.has_key?('html_path')
               paginate(site, data['path'], data['html_path'], category, data['posts_per_page'].to_i)
             else
@@ -112,15 +113,15 @@ module Jekyll
         pages = Pager.calculate_pages(all_posts, posts_per_page)
         (1..pages).each do |num_page|
           pager = Pager.new(category, num_page, all_posts, pages, page_path, html_path, posts_per_page)
-          newpage = IndexPage.new(site, page_path.sub(":num", num_page.to_s), num_page, pager)
-          site.pages << newpage
-          htmlpage = HtmlPage.new(site, html_path.sub(":num", num_page.to_s), newpage)
-          site.pages << htmlpage
+          index_page = IndexPage.new(site, page_path.sub(":num", num_page.to_s), num_page, pager)
+          site.pages << index_page
+          site.pages << HtmlPage.new(site, html_path.sub(":num", num_page.to_s), index_page)
         end
       end
     end
   end
 
+  #representation of the object exposed liquid in the index_page
   class Pager
     attr_reader :page, :per_page, :posts, :total_posts, :total_pages,
       :previous_page, :previous_page_path, :next_page, :next_page_path
@@ -230,7 +231,8 @@ module Jekyll
       }
     end
   end
-  
+
+  #when called a pager object will be available to liquid
   class PaginateTag < Liquid::Tag
     def initialize(tag_name, text, tokens)
       super
@@ -239,19 +241,27 @@ module Jekyll
     
     #TODO check argument correctness
     def render(context)
+      #get the arguments
       parts = @text.split(' ').reject { |c| c.empty? }
       if parts.size < 3
         puts('not enough arguments for {% get_paginate %}')
         return ''
       end
-            
+
+      #use the arguments
       category = parts[0]
       posts_per_page = parts[1].to_i
       num_page = parts[2].to_i
+
+      #get the posts
       all_posts = context.registers[:site].site_payload['site']['categories'][category]
       num_pages = Pager.calculate_pages(all_posts, posts_per_page)
+
+      #get the config
       format = context.registers[:site].config['custom_paginate'][category]['path']
       html_format = context.registers[:site].config['custom_paginate'][category]['html_path']
+
+      #let liquid use the pager
       context.registers[:page]['paginator'] = Pager.new(category, num_page, all_posts, num_pages, format, html_format, posts_per_page).to_liquid
       ''
     end

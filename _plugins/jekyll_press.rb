@@ -1,4 +1,5 @@
 #from https://github.com/stereobooster/jekyll-press/blob/master/lib/jekyll-press.rb
+#compresses files
 
 require 'Open3'
 require 'digest/sha2'
@@ -7,10 +8,14 @@ require 'multi_css'
 require 'multi_js'
 
 module Jekyll
+  #maps paths to hashes of the last time the file was compressed
   $min_checksum = {}
+  #maps paths to the output of static files
   $static_output = {}
 
   module StaticFileExt
+    #writes the specified content static file or just copies it from the file
+    #system
     def write(dest)
       if path.nil? or $static_output[path].nil?
         super
@@ -26,6 +31,7 @@ module Jekyll
     prepend StaticFileExt
   end
 
+  #compresses javascript
   def self.output_js(path, page, content)
     return content if path =~ /.min.js$/
     begin
@@ -35,6 +41,7 @@ module Jekyll
     end
   end
 
+  #compresses css
   def self.output_css(path, page, content)
     return content if path =~ /.min.css$/
     begin
@@ -43,23 +50,28 @@ module Jekyll
       return parse_error(path, content, e)
     end
   end
-  
+
+  #compresses html
   def self.output_html(path, page, content)
     return content if page =~ /.min.html$/
     return compress_html(page.site, content)
   end
 
+  #compresses svg
   def self.output_svg(path, page, content)
     return content if page =~ /.min.svg$/
+    #find the svgo config by walking up the directory
     options = page.dir
     while not File.file?(File.join(page.site.source, options, 'svgo.yml')) and not ['.', '/'].include?(options)
       options = File.dirname(options)
     end
-    
+
+    #load the svgo config
     if not ['.', '/'].include?(options)
       path = File.join(page.site.source, options, 'svgo.yml')
       config = "--config=#{path}"
       yaml = YAML.load(File.read(path))
+      #don't use svgo if its disabled
       return nil if yaml.respond_to?('key') and yaml.has_key?('enabled') and yaml['enabled'] == false
     else
       config = ''
@@ -68,6 +80,7 @@ module Jekyll
     return runCmd("node_modules/.bin/svgo.cmd #{config} -i - -o -", content)
   end
 
+  #compresses json
   def self.output_json(path, page, content)
     return content if page =~ /.min.json$/
     return JSON.dump(JSON.load(content))
@@ -80,6 +93,7 @@ module Jekyll
   end
 
   def self.compress(page)
+    #get the destination path
     if page.is_a?(Page) or page.is_a?(StaticFile)
       dest_path = File.join(page.dir, page.name)
     elsif page.is_a?(Document)
@@ -88,6 +102,7 @@ module Jekyll
       return
     end
     
+    #get the content
     if page.respond_to?('content')
       content = page.content
     elsif page.is_a?(BuiltPage)
@@ -96,12 +111,15 @@ module Jekyll
       content = File.read(page.path)
     end
     
+    #check if the file needs to be compressed
+    #by checking for exclusion and dirtyness
     return if content.length == 0 or exclude?(dest_path,
       page.site.config['jekyll-press'] && page.site.config['jekyll-press']['exclude'])
     checksum = Digest::SHA2.hexdigest(content)
     return if checksum == $min_checksum[page.path]
     $min_checksum[page.path] = checksum
     
+    #compress the file
     case File.extname(dest_path)
       when '.js'
         return output_js(dest_path, page, content)
@@ -119,10 +137,12 @@ module Jekyll
   end
   
   def self.doCompress(page)
+    #return if disabled
     if page.site.config.key?('jekyll-press') and page.site.config['jekyll-press'].key?('enabled')
       return if not page.site.config['jekyll-press']['enabled']
     end
     content = compress(page)
+    #set the content
     if not content.nil?
       if page.respond_to?('content')
         page.content = content

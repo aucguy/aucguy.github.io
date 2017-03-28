@@ -1,3 +1,4 @@
+#removes specificed files from the website
 module Jekyll
   def self.removeFiles(site)
     config = site.config['ignore-file'] && site.config['ignore-file']['exclude']
