@@ -32,14 +32,15 @@ tabs:
       link: /about.html
 
 jekyll-press:
-    exclude: '/projects/LD33/scripts/canvg/svgs/**'
     js_options: {}
     css_options: {}
     html_options: {}
-    enabled: true
 
 ignore-file:
-    exclude: '**/svgo.yml'
+    exclude:
+      - '**/svgo.yml'
+      - '/Gemfile'
+      - '/Gemfile.lock'
 
 output-build:
   -
