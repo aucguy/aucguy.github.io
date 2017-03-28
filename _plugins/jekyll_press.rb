@@ -7,33 +7,8 @@ require 'multi_css'
 require 'multi_js'
 
 module Jekyll
-  BINARY_FILES = ['.png']
-
   $min_checksum = {}
   $static_output = {}
-
-  def self.file_mode(path)
-    if BINARY_FILES.include?(File.extname(path))
-      'b'
-    else
-      ''
-    end
-  end
-  
-  def self.read_file(path)
-    content = nil
-    File.open(path, 'r' + file_mode(path)) do |file|
-      content = file.read()
-    end
-    return content
-  end
-
-  def self.write_file(path, content)
-    FileUtils.mkdir_p(File.dirname(path))
-    File.open(path, 'w' + file_mode(path)) do |file|
-      file.write(content)
-    end
-  end
 
   module StaticFileExt
     def write(dest)
@@ -49,22 +24,6 @@ module Jekyll
   class StaticFile
     attr_reader :dir, :site
     prepend StaticFileExt
-  end
-  
-  def self.exclude?(dest_path, exclude)
-    res = false
-    if exclude
-      if exclude.is_a? String
-        exclude = [exclude]
-      end
-      exclude.each do |e|
-        if e == dest_path || File.fnmatch(e, dest_path)
-          res = true
-          break
-        end
-      end
-    end
-    res
   end
 
   def self.output_js(path, page, content)
@@ -112,20 +71,6 @@ module Jekyll
   def self.output_json(path, page, content)
     return content if page =~ /.min.json$/
     return JSON.dump(JSON.load(content))
-  end
-
-  def self.runCmd(cmd, input)
-    output = nil
-    Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-      wait_thr.pid
-      if not input.nil?
-        stdin.write(input)
-      end
-      stdin.close
-      output = stdout.read
-      wait_thr.value
-    end
-    return output
   end
   
   def self.parse_error(path, content, e)
