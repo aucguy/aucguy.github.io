@@ -1,12 +1,7 @@
 ---
 ---
-<!DOCTYPE html>
-<html>
-	<head>
-	<meta charset="ISO-8859-1">
-	<title>Insert title here</title>
-	</head>
-	<body>
-		{{ page.index_page }}
-	</body>
-</html>
+
+{% capture title %}
+	{{ page.paginator.category }} {{ page.paginator.page }} of {{ page.paginator.total_pages }}
+{% endcapture %}
+{% include theme/theme.html title=title midsection=page.index_page %}

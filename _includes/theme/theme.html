@@ -2,7 +2,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>{{ page.title }}</title>
+	<title>
+		{% if include.title %}
+			{{ include.title }}
+		{% else %}
+			{{ page.title }}
+		{% endif %}
+	</title>
 	{% include js_utils.html %}
 	<script>
   	{% comment %} per-page scripts {% endcomment %} 
