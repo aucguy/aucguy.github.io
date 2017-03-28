@@ -60,4 +60,9 @@ module Jekyll
     end
     return output
   end
+
+  #gets the config value
+  def self.config_value(site, key1, key2)
+    site.config[key1] && site.config[key1][key2]
+  end
 end

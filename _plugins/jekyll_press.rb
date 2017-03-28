@@ -35,7 +35,7 @@ module Jekyll
   def self.output_js(path, page, content)
     return content if path =~ /.min.js$/
     begin
-      return MultiJs.compile(content, page.site.config['jekyll-press'] && page.site.config['jekyll-press']['js_options'] || {})
+      return MultiJs.compile(content, config_value(page.site, 'jekyll-press', 'js_options') || {})
     rescue MultiJs::ParseError => e
       return parse_error(path, content, e)
     end
@@ -45,7 +45,7 @@ module Jekyll
   def self.output_css(path, page, content)
     return content if path =~ /.min.css$/
     begin
-     return MultiCss.min(content, page.site.config['jekyll-press'] && page.site.config['jekyll-press']['css_options'] || {})
+     return MultiCss.min(content, config_value(page.site, 'jekyll-press', 'css_options') || {})
     rescue MultiCss::ParseError => e
       return parse_error(path, content, e)
     end
@@ -114,7 +114,7 @@ module Jekyll
     #check if the file needs to be compressed
     #by checking for exclusion and dirtyness
     return if content.length == 0 or exclude?(dest_path,
-      page.site.config['jekyll-press'] && page.site.config['jekyll-press']['exclude'])
+      config_value(page.site, 'jekyll-press', 'exclude'))
     checksum = Digest::SHA2.hexdigest(content)
     return if checksum == $min_checksum[page.path]
     $min_checksum[page.path] = checksum

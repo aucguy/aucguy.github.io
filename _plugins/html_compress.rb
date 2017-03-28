@@ -40,9 +40,9 @@ module Jekyll
     def cdata_block(text)
       #compress the text using by appropriate means based on the tag or lack of.
       if @stack.last == 'script'
-        @content += MultiJs.compile(text, @site.config['jekyll-press'] && @site.config['jekyll-press']['js_options'] || {})
+        @content += MultiJs.compile(text, Jekyll::config_value(@site, 'jekyll-press', 'js_options') || {})
       elsif @stack.last == 'style'
-        @content += MultiCss.min(text, @site.config['jekyll-press'] && @site.config['jekyll-press']['css_options'] || {})
+        @content += MultiCss.min(text, Jekyll::config_value(@site, 'jekyll-press', 'css_options') || {})
       else
         @content += "<![CDATA[#{text}]]>"
       end
