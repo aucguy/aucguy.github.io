@@ -35,7 +35,7 @@ module Jekyll
       else
         content = ""
       end
-      self.content = content
+      self.content = "{% raw %}#{content}{% endraw %}"
       self.data ||= {}
       
       #setup the custom data and copy it into the actual page data
