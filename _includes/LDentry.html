@@ -1,0 +1,20 @@
+{% capture midsection %}
+<div style="position:relative;left:2%">
+<h1>
+	{% if include.title %}
+		{{ include.title }}
+	{% else %}
+		{{ page.title }}
+	{% endif %}
+</h1>
+<iframe src="{{ include.game }}" width="700px" height="500px"></iframe>
+<p>
+	<a href="{{ include.game }}">Click here if scrolling is a problem</a>
+</p>
+<p>
+	<a href="{{ include.entryLink }}">Ludum Dare Entry</a>
+</p>
+</div>
+{% endcapture %}
+
+{% include theme/theme.html midsection=midsection %}
