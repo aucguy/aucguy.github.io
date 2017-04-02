@@ -13,7 +13,11 @@ base.registerModule('posts', function(module) {
 		resource.ajax(nextPage, function(response) {
 			var dom = parser.parseFromString(response.responseText, 'text/html');
 			setNextPage(dom);
-			div.appendChild(dom.body.childNodes[0]);
+			while(dom.body.childNodes.length !== 0) {
+				var child = dom.body.childNodes[0];
+				dom.body.removeChild(child);
+				div.appendChild(child);
+			}
 		});
 	});
 	

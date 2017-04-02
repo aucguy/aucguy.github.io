@@ -6,6 +6,7 @@ require 'digest/sha2'
 require 'yaml'
 require 'multi_css'
 require 'multi_js'
+require 'htmlcompressor'
 
 module Jekyll
   #maps paths to hashes of the last time the file was compressed
@@ -25,17 +26,45 @@ module Jekyll
       end
     end
   end
-  
+
   class StaticFile
     attr_reader :dir, :site
     prepend StaticFileExt
+  end
+
+  class JavascriptCompressor
+    def initialize(site)
+      @site = site
+    end
+
+    def compress(source)
+      return Jekyll::compressJs(source, @site)
+    end
+  end
+
+  class CssCompressor
+    def initialize(site)
+      @site = site
+    end
+
+    def compress(source)
+      return Jekyll::compressCss(source, @site)
+    end
+  end
+
+  def self.compressJs(source, site)
+    MultiJs.compile(source, config_value(site, 'jekyll-press', 'js_options') || {})
+  end
+
+  def self.compressCss(source, site)
+    MultiCss.min(source, config_value(site, 'jekyll-press', 'css_options') || {})
   end
 
   #compresses javascript
   def self.output_js(path, page, content)
     return content if path =~ /.min.js$/
     begin
-      return MultiJs.compile(content, config_value(page.site, 'jekyll-press', 'js_options') || {})
+      return compressJs(content, page.site)
     rescue MultiJs::ParseError => e
       return parse_error(path, content, e)
     end
@@ -45,7 +74,7 @@ module Jekyll
   def self.output_css(path, page, content)
     return content if path =~ /.min.css$/
     begin
-     return MultiCss.min(content, config_value(page.site, 'jekyll-press', 'css_options') || {})
+     return compressCss(content, page.site, 'jekyll-press')
     rescue MultiCss::ParseError => e
       return parse_error(path, content, e)
     end
@@ -54,7 +83,13 @@ module Jekyll
   #compresses html
   def self.output_html(path, page, content)
     return content if page =~ /.min.html$/
-    return compress_html(page.site, content)
+    compressor = HtmlCompressor::Compressor.new({
+      :compress_css => true,
+      :css_compressor => CssCompressor.new(page.site),
+      :compress_javascript => true,
+      :javascript_compressor => JavascriptCompressor.new(page.site)
+    })
+    return compressor.compress(content)
   end
 
   #compresses svg
