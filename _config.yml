@@ -43,6 +43,9 @@ ignore-file:
       - '**/svgo.yml'
       - '/Gemfile'
       - '/Gemfile.lock'
+      - '/runServer.bat'
+      - '/package.json'
+      - '/setup'
 
 output-build:
   -
