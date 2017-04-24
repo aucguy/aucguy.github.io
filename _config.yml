@@ -30,6 +30,8 @@ tabs:
           link: /projects/LD36/view.html
         Turtle Fork:
           link: /projects/LD37/view.html
+        Planet Carbalsnahps 2:
+          link: /projects/LD38/view.html
     About:
       link: /about.html
 
@@ -71,6 +73,12 @@ output-build:
     cmd: 'npm install & grunt build'
     build: 'build/release'
     output: 'projects/LD37'
+    exclude: '**/node_modules/**'
+  -
+    dir: '_repos/Ludum-Dare-38'
+    cmd: 'npm install & gulp build'
+    build: 'build/release'
+    output: 'projects/LD38'
     exclude: '**/node_modules/**'
 
 defaults:
