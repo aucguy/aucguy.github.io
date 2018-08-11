@@ -32,6 +32,8 @@ tabs:
           link: /projects/LD37/view.html
         Planet Carbalsnahps 2:
           link: /projects/LD38/view.html
+        Ludum Dare 42:
+          link: /projects/LD42/view.html
     About:
       link: /about.html
 
@@ -39,6 +41,7 @@ jekyll-press:
     js_options: {}
     css_options: {}
     html_options: {}
+    enabled: false
 
 ignore-file:
     exclude:
@@ -79,6 +82,12 @@ output-build:
     cmd: 'npm install & gulp build'
     build: 'build/release'
     output: 'projects/LD38'
+    exclude: '**/node_modules/**'
+  -
+    dir: '_repos/Ludum-Dare-42'
+    cmd: 'npm install & gulp build'
+    build: 'build/release'
+    output: 'projects/LD42'
     exclude: '**/node_modules/**'
 
 defaults:
