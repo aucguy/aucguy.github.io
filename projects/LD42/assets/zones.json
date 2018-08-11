@@ -1,0 +1,70 @@
+{
+    "zones": [
+        {
+            "type": "order",
+            "left": 0,
+            "top": 0,
+            "width": 640,
+            "height": 80
+        },
+        {
+            "type": "counter",
+            "left": 265,
+            "top": 80,
+            "width": 280,
+            "height": 560
+        },
+        {
+            "type": "ingredient",
+            "left": 545,
+            "top": 80,
+            "width": 95,
+            "height": 320,
+            "items": [
+                {
+                    "ingredientType": "flour",
+                    "x": 545,
+                    "y": 80
+                },
+                {
+                    "ingredientType": "yeast",
+                    "x": 545,
+                    "y": 150
+                },
+                {
+                    "ingredientType": "bowl",
+                    "x": 545,
+                    "y": 200
+                }
+            ]
+        },
+        {
+            "type": "stove",
+            "left": 0,
+            "top": 185,
+            "width": 130,
+            "height": 455
+        },
+        {
+            "type": "oven",
+            "left": 130,
+            "top": 185,
+            "width": 135,
+            "height": 455
+        },
+        {
+            "type": "warm",
+            "left": 0,
+            "top": 80,
+            "width": 265,
+            "height": 105
+        },
+        {
+            "type": "garbage",
+            "left": 545,
+            "top": 400,
+            "width": 95,
+            "height": 80
+        }
+    ]
+}

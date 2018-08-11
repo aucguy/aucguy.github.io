@@ -1,1 +1,65 @@
-var base={};!function(n,e){function o(n){l=n,console.error(n.stack)}function r(n,e,r){"undefined"==typeof e&&(e=null),"undefined"==typeof r&&(r=[]);try{n.apply(e,r)}catch(u){o(u)}}function u(){for(var n=0;n<t.length;n++){var o=t[n];if("?global"==o.name)o.module(e);else if("?thisIsWindow"==o.name)o.module.call(e);else{var r=e[o.name];if("undefined"==typeof r){var r={};e[o.name]=r}o.module(r)}}}var l=null;n.onError=o,n.runAndReportErrors=r;var t=[];n.registerModule=function(n,e){t.push({name:n,module:e})},n.init=function(){r(u)},n.external=function(n){return function(){null===l&&r(n,null,arguments)}}}(base,this);
+var base = {};
+(function(module, global) {
+	var errorThrown = null;
+	function onError(error) {
+		errorThrown = error;
+		console.error(error.stack);
+	}
+	module.onError = onError;
+
+	function runAndReportErrors(func, self, args) {
+		if (typeof self == 'undefined') {
+			self = null;
+		}
+		if (typeof args == 'undefined') {
+			args = [];
+		}
+
+		try {
+			func.apply(self, args);
+		} catch (error) {
+			onError(error);
+		}
+	}
+	;
+	module.runAndReportErrors = runAndReportErrors;
+
+	var modules = [];
+
+	function loadModules() {
+		for (var i = 0; i < modules.length; i++) {
+			var obj = modules[i];
+			if (obj.name == '?global') {
+				obj.module(global);
+			} else if (obj.name == '?thisIsWindow') {
+				obj.module.call(global);
+			} else {
+				var mod = global[obj.name];
+				if (typeof mod == 'undefined') {
+					var mod = {};
+					global[obj.name] = mod;
+				}
+				obj.module(mod);
+			}
+		}
+	}
+
+	module.registerModule = function(name, mod) {
+		modules.push({
+			name : name,
+			module : mod
+		});
+	};
+
+	module.init = function() {
+		runAndReportErrors(loadModules);
+	};
+
+	module.external = function(func) {
+		return function() {
+			if(errorThrown === null) {
+				runAndReportErrors(func, null, arguments);
+			}
+		};
+	}
+})(base, this);

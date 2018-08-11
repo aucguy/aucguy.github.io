@@ -1,1 +1,390 @@
-var base={};!function(e,r){function n(){a("base"),a("run")}function t(r){for(var n=0;n<e.errorCallbacks.length;n++)e.errorCallbacks[n](r);console.error(r.name+": "+r.message),console.error(r.stack);var t=document.getElementById("error div"),o=document.getElementById("error text"),a=document.getElementById("display");o.innerHTML=r.name+": "+r.message+"\n"+r.stack,t.style.display="block",a.style.display="none"}function o(e){try{e()}catch(r){t(r)}}function a(e){var n=l[e];if(0!==n.phase)return n.scope;n.phase=1;var t=null;if("?global"==n.name)t=r,n.module(t);else if("?thisIsWindow"==n.name)n.module.call(r);else if(n.name.startsWith("!")){var e=n.name.substring(1,n.name.length);t=r[e],null===t&&(t={},r[e]=t),n.module(t)}else t=n.scope,null===t&&(t={},n.scope=t),n.module(t);return n.phase=2,t}e.errorCallbacks=[];var l=[];e.init=function(){o(n)},e.onError=t,e.runAndReportErrors=o,e.importModule=a,e.onModuleRegistered=function(){},e.registerModule=function(r,n,t){l[r.startsWith("!")?r.substring(1,r.length):r]={name:r,module:n,scope:null,phase:0},e.onModuleRegistered()},document.addEventListener("DOMContentLoaded",e.init,!1)}(base,this),base.registerModule("!base",function(e){function r(e,r){return null===e?null===r:"string"==typeof r?typeof e==r:e instanceof r}var n=[],t=[];e.extend=function(e,r,n){e instanceof Array||(e=[e]);var t={},o=n;if(!o.hasOwnProperty("constructor"))throw new Error("Constructor must be defined");for(var a,l=0;l<e.length;l++){var s=e[l];for(a in s.prototype)if(s.prototype.hasOwnProperty(a)){var u=s.prototype[a];t[a]=u,void 0!==typeof s.prototype.__name__&&-1==a.indexOf("$")&&(t[a+"$"+s.prototype.__name__]=u)}}t.__name__=r;for(a in o)o.hasOwnProperty(a)&&(t[a]=o[a]);return t.constructor.prototype=t,Object.setPrototypeOf(t.constructor.prototype,e[0].prototype),t.constructor},e.setInterval=function(r,t){var o=setInterval(function(){e.runAndReportErrors(r)},t);return n.push(o),o},e.clearInterval=function(e){clearInterval(e),n.splice(n.indexOf(e),1)},e.addListener=function(e,r,n){var o=base.external(n);e.addEventListener(r,o),t.push({element:e,event:r,ext:o,callback:n})},e.removeListener=function(e,r,n){for(var o=0;o<t.length;o++){var a=t[o];if(a.element==e&&a.event==r&&a.callback==n){a.element.removeEventListener(r,a.ext),t.splice(o,1);break}}},e.errorCallbacks.push(function(r){var o;for(o=0;o<n.length;o++)e.clearInterval(n[o]);for(o=0;o<t.length;o++){var a=t[o];e.removeListener(a.element,a.event,a.callback)}}),e.runAndOnFail=function(e,r,n){return function(){try{r.apply(e,arguments)}catch(t){for(var o=[t],a=0;a<arguments.length;a++)o.push(arguments[a]);n.apply(null,o)}}},e.external=function(r){var n=e.runAndOnFail(null,r,base.onError);return n.func=r,n},e.assertType=function(e,n){if(!r(e,n))throw new Error("value is not correct type")},e.safeParseInt=function(e){return Math.round(parseFloat(e))},e.abstractMethod=function(){throw new Error("Abstract Method called")}});
+/**
+ * bootstrap and simple utilities module
+ */
+var base = {};
+(function(module, global) {
+  /**
+   * called when an error is thrown. These do not use error handling
+   */
+  module.errorCallbacks = [];
+
+  /**
+   * an array of registered module 'namespaces'
+   */
+  var modules = [];
+
+  /**
+   * whether or not the initial modules (modules embeded in the html document
+   * via script tags and aren't dynamically added) have been loaded
+   */
+  var initialLoadingDone = false;
+
+  /**
+   * initializes all the registered modules and reports any errors. Used to
+   * start everything
+   */
+  module.init = function init() {
+    runAndReportErrors(start);
+  };
+
+  function start() {
+    importModule('base'); // just initialize it (already loaded)
+    importModule('run'); // just run the code, not refering to anything
+  }
+
+  /**
+   * called when an error occurs. This reports an error to the user and
+   * unregisters anything that is called at an interval (and was registered via
+   * base.js).
+   * 
+   * @param error
+   *            exception that occured and is to be reported
+   */
+  function onError(error) {
+    // call error callbacks
+    for (var i = 0; i < module.errorCallbacks.length; i++) {
+      module.errorCallbacks[i](error);
+    }
+    // display the error to the console
+    console.error(error.name + ": " + error.message);
+    console.error(error.stack);
+
+    // display the error on the screen
+    var errorDiv = document.getElementById("error div");
+    var errorText = document.getElementById("error text");
+    var display = document.getElementById("display");
+
+    errorText.innerHTML = error.name + ": " + error.message + "\n" + error.stack;
+    // swap displays
+    errorDiv.style.display = "block";
+    display.style.display = "none";
+  }
+  module.onError = onError;
+
+  /**
+   * calls a function and reports any errors thrown via calling onError()
+   * 
+   * @param func
+   *            the function to call and report errors for
+   */
+  function runAndReportErrors(func) {
+    try {
+      func();
+    } catch (error) {
+      onError(error);
+    }
+  }
+  module.runAndReportErrors = runAndReportErrors;
+
+  /**
+   * imports a module and returns the module object
+   * 
+   * @param name
+   *            the name of the module (first argument of registerModule) to
+   *            be imported
+   */
+  function importModule(name) {
+    var obj = modules[name]; // get module object
+    if (obj.phase !== 0) { // if loaded or loading, return the module
+      return obj.scope;
+    }
+    obj.phase = 1; // set phase to 'loading'
+
+    var mod = null;
+    if (obj.name == "?global") {
+      mod = global;
+      obj.module(mod); // add variables to global scope
+    } else if (obj.name == "?thisIsWindow") {
+      obj.module.call(global); // 'this' is the global scope in the
+      // function
+    } else if (obj.name.startsWith("!")) {
+      var name = obj.name.substring(1, obj.name.length);
+      mod = global[name];
+      if (mod === null) {
+        mod = {};
+        global[name] = mod;
+      }
+      obj.module(mod);
+    } else {
+      mod = obj.scope; // register the module in the global
+      if (mod === null) {
+        mod = {};
+        obj.scope = mod;
+      }
+      obj.module(mod);
+    }
+
+    obj.phase = 2; // set phase to 'loaded'
+    return mod;
+  }
+  module.importModule = importModule;
+
+  /**
+   * called when a module is registered. Used as a hook (supposed to be
+   * overwritten)
+   */
+  module.onModuleRegistered = function() {
+  };
+
+  /**
+   * registers a module with base.js
+   * 
+   * @param name
+   *            the name of the module to register. If it is
+   * @info '?global' the initialization function will get called with the
+   *       argument of the global object (ie the module namespace is the global
+   *       namespace.)
+   * @info '?thisIsWindow' initialization function will get called with 'this'
+   *       as the global object. Useful for modules that were already
+   *       written to set variables with 'this'
+   * @info other The initialization function will get called with the argument
+   *       of the global scope's 'name' attribute (ie global.name)
+   * @param mod
+   *            The initialization function; a function that initializes a
+   *            module object by setting properties on the argument
+   */
+  module.registerModule = function(name, mod, url) {
+    modules[name.startsWith('!') ? name.substring(1, name.length) : name] = {
+      name : name,
+      module : mod,
+      scope : null,
+      phase : 0
+    // loading stages (0 - unloaded, 1 - loading 2 - loaded)
+    };
+    module.onModuleRegistered();
+  };
+  // when everything is loaded, initialize everything
+  document.addEventListener("DOMContentLoaded", module.init, false);
+})(base, this);
+
+// random utilities section
+base.registerModule('!base',
+    function(module) {
+      /**
+       * the ids of the bound intervals returned by base.setInterval
+       */
+      var intervalHooks = [];
+
+      /**
+       * bound event listeners
+       */
+      var listenerHooks = [];
+
+      /**
+       * extends a class from another class. Useful for class hierachy
+       * models. To call supermethods to do 'this.method$super()' where
+       * 'method' is the method you want to call and 'super' is the name
+       * of the superclass passed into base.extend
+       * 
+       * @param base
+       *            the super class to extend (should really be the
+       *            initialization function (ie 'initFunc' in 'new
+       *            initFunc()'))
+       * @param name
+       *            the name of the class. Need for calling super methods
+       * @param the
+       *            overridden attributes of the new class
+       * @return the extended class
+       */
+      module.extend = function extend(bases, name, sub) {
+        if(!(bases instanceof Array)) {
+          bases = [bases];
+        }
+        var proto = {}; // the prototype
+        var cl = sub;
+        if (!cl.hasOwnProperty("constructor")) {
+          throw (new Error("Constructor must be defined"));
+        }
+        
+        var attr;
+        for (var i = 0; i < bases.length; i++) {
+          var base = bases[i];
+          for (attr in base.prototype) { // copying old attributes
+            if (base.prototype.hasOwnProperty(attr)) {
+              var value = base.prototype[attr];
+              proto[attr] = value;
+              if (typeof base.prototype.__name__ !== undefined && attr.indexOf("$") == -1) {
+                proto[attr + "$" + base.prototype.__name__] = value; // setting
+                // "super methods"
+              }
+            }
+          }
+        }
+
+        proto.__name__ = name; // needed for child classes
+
+        for (attr in cl) { // copying new attributes
+          if (cl.hasOwnProperty(attr)) {
+            proto[attr] = cl[attr];
+          }
+        }
+
+        proto.constructor.prototype = proto; // setting constructor prototype
+        Object.setPrototypeOf(proto.constructor.prototype, bases[0].prototype);
+        return proto.constructor;
+      };
+
+      /**
+       * Has the same behavior as javascript's normal setInterval but it
+       * reports any errors that happen during the function to the user
+       * and if any errors occur anywhere, it clears the interval. Useful
+       * if you don't want a function to execute after an error. Note if
+       * you use this use base.js's clearInterval, not the regular one.
+       * 
+       * @param func
+       *         the function to call at a certaint interval
+       * @param inter
+       *         the interval to call 'func'
+       * @return the id associated with the interval. Pass this to clear
+       *         interval to stop calling the function
+       */
+      module.setInterval = function setInterval_(func, inter) {
+        var r = setInterval(function() {
+          module.runAndReportErrors(func);
+        }, inter);
+        intervalHooks.push(r);
+        return r;
+      };
+
+      /**
+       * Has the same behavior as javascripts' normal clearInterval but it
+       * undoes the hooking with base.js If you used base.setInterval then
+       * use this too, if not don't use this
+       * 
+       * @param int
+       *         the id returned from setInterval
+       */
+      module.clearInterval = function clearInterval_(int) {
+        clearInterval(int);
+        intervalHooks.splice(intervalHooks.indexOf(int), 1);
+      };
+      
+      /**
+       * adds a listener to an element, but if an error occurs during the 
+       * callback, it is reported. If you use base's addListener, use
+       * base's removeListener
+       * @param element 
+       *        the element to add a listener to
+       * @param event
+       *        the event to listen for
+       * @param callback
+       *        the function to call when the event occurs
+       **/
+      module.addListener = function addListener(element, event, callback) {
+        var ext = base.external(callback);
+        element.addEventListener(event, ext);
+        listenerHooks.push({
+          element : element,
+          event : event,
+          ext : ext,
+          callback : callback
+        });
+      };
+
+      module.removeListener = function removeListener(element, event, callback) {
+        for (var i = 0; i < listenerHooks.length; i++) {
+          var obj = listenerHooks[i];
+          if (obj.element == element && obj.event == event && obj.callback == callback) {
+            obj.element.removeEventListener(event, obj.ext);
+            listenerHooks.splice(i, 1);
+            break;
+          }
+        }
+      };
+      
+      /**
+       * unhooks stuff
+       **/
+      module.errorCallbacks.push(function(error) {
+        var i;
+        for (i = 0; i < intervalHooks.length; i++) {
+          module.clearInterval(intervalHooks[i]);
+        }
+        for (i = 0; i < listenerHooks.length; i++) {
+          var obj = listenerHooks[i];
+          module.removeListener(obj.element, obj.event, obj.callback);
+        }
+      });
+
+      /**
+       * returns a function that runs another function. If an error is
+       * thrown run another
+       * 
+       * @param self
+       *            the 'this' in the function 'func'
+       * @param func
+       *            the function that will be called when the returned
+       *            function is called
+       * @param onfail
+       *            called if the function 'func' throws an error
+       * @return a function that calls 'func' and if 'func' throws an
+       *         error, calls onfail
+       */
+      module.runAndOnFail = function runAndOnFail(self, func, onfail) {
+        return function(/* args */) {
+          try {
+            func.apply(self, arguments);
+          } catch (error) {
+            var args = [ error ];
+            for (var i = 0; i < arguments.length; i++) {
+              args.push(arguments[i]);
+            }
+            onfail.apply(null, args);
+          }
+        };
+      };
+
+      /**
+       * returns a function does exactly what the argument function would
+       * do, but reports errors. Useful for having callbacks on html elements
+       * 
+       * @param func
+       *            the function to call / behavior is emulated
+       * @return a function that handles errors
+       */
+      module.external = function external(func) {
+        var ret = module.runAndOnFail(null, func, base.onError);
+        ret.func = func;
+        return ret;
+      };
+
+      /**
+       * throws an error if the value is not of the specified type
+       * 
+       * @param value
+       *            the value to check its type
+       * @param type
+       *            the type expected of the value
+       */
+      module.assertType = function assertType(value, type) {
+        if (!isOfType(value, type)) {
+          throw (new Error("value is not correct type"));
+        }
+      };
+      
+      function isOfType(value, type) {
+        if(value === null) { //null
+          return type === null;
+        } else if(typeof type == "string") { //primitives
+          return typeof value == type;
+        } else {
+          return value instanceof type;
+        }
+      }
+
+      /**
+       * parses an int while handling exponents
+       * 
+       * @param str
+       *            the string to parse
+       */
+      module.safeParseInt = function safeParseInt(str) {
+        return Math.round(parseFloat(str));
+      };
+
+      module.abstractMethod = function abstractMethod() {
+        throw(new Error("Abstract Method called"));
+      };
+
+      // TODO: implemenent Element.setAttribute for IE
+    });

@@ -1,1 +1,221 @@
-<!DOCTYPE html> <html> <head> <title> Ludum Dare 30 entry (Shadows and Lights) </title> <script src="/scripts/base.js"></script> <script src="/scripts/resource.js"></script> <script> </script> <script src="/scripts/tab.js"></script> <script>base.init();</script> <style>#content{background:#fff;position:absolute;border:5px groove gray;left:10%;width:80%}#tabs{position:relative;left:7%;z-index:3}</style> </head> <body background="/assets/background.svg"> <div id="content"> <div style="text-align:center"> <img src="/assets/title.svg" alt="Aucguy's Website"></img> </div> <table id="tabs"> <tr id="tabsrow"> <td> <div id="tab-Blog" onmouseover="tabs.showTabList('Blog')" onmouseout="tabs.hideTabList('Blog')"> <a href="/index.html"> <img src="/assets/tabs/tab-Blog.svg"></img> </a> <table id="tabList-Blog" style="display:none;position:absolute"> </table> </div> </td> <td> <div id="tab-Projects" onmouseover="tabs.showTabList('Projects')" onmouseout="tabs.hideTabList('Projects')"> <a href="/projects/index.html"> <img src="/assets/tabs/tab-Projects.svg"></img> </a> <table id="tabList-Projects" style="display:none;position:absolute"> <tr> <td> <a href="/projects/spc.html"> <img src="/assets/tabs/item-Projects-spc.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/wavedemo/index.html"> <img src="/assets/tabs/item-Projects-Wave Demo.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/LD30/index.html"> <img src="/assets/tabs/item-Projects-Shadows and Lights.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/LD33/view.html"> <img src="/assets/tabs/item-Projects-Minion Army.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/LD35/view.html"> <img src="/assets/tabs/item-Projects-Color Shape Stack.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/LD36/view.html"> <img src="/assets/tabs/item-Projects-Camp Fire Simulator 2016.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/LD37/view.html"> <img src="/assets/tabs/item-Projects-Turtle Fork.svg"></img> </a> </td> </tr> <tr> <td> <a href="/projects/LD38/view.html"> <img src="/assets/tabs/item-Projects-Planet Carbalsnahps 2.svg"></img> </a> </td> </tr> </table> </div> </td> <td> <div id="tab-About" onmouseover="tabs.showTabList('About')" onmouseout="tabs.hideTabList('About')"> <a href="/about.html"> <img src="/assets/tabs/tab-About.svg"></img> </a> <table id="tabList-About" style="display:none;position:absolute"> </table> </div> </td> </tr> </table> <div class="midsection"> <p>This entry was written in python and must be downloaded in order to run. ShadowsAndLightsBuild.zip is the recommended download. Everything but ShadowsAndLightsBuild.zip require python 2 and pygame to be installed. Building ShadowsAndLights.zip requires cx_freeze to be installed.</p> <h1 id="downloads">Downloads</h1> <ul> <li><a href="/downloads/LD30/ShadowsAndLightsBuild.zip">ShadowsAndLightBuild.zip</a> (recommended; no prerequistes to run)</li> <li><a href="/downloads/LD30/ShadowsAndLightsSrc.zip">ShadowsAndLightsSrc.zip</a> (source with build script)</li> <li><a href="/downloads/LD30/dist.zip">dist.zip</a> (original ‘build’ posting from Ludum Dare; requires python 2 and pygame to be installed separately)</li> <li><a href="/downloads/LD30/dist src.zip">dist src.zip</a> (original source code posting from Ludum Dare; no build script)</li> </ul> <p><a href="http://ludumdare.com/compo/ludum-dare-30/?action=preview&amp;uid=41457">Ludum Dare entry</a></p> </div> </div> </body> </html>
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+		
+			Ludum Dare 30 entry (Shadows and Lights)
+		
+	</title>
+	 
+<script src="/scripts/base.js"></script>
+<script src="/scripts/resource.js"></script>
+	<script>
+  	 
+	</script>
+	<script src="/scripts/tab.js"></script>
+	
+	<script>base.init()</script>
+	
+	<style>
+	#content
+	{
+		background: white;
+		position: absolute;
+		border: 5px groove gray;
+		left: 10%;
+		width: 80%
+	}
+	#tabs
+	{
+		position:relative;
+		left:7%;
+		z-index:3
+	}
+	</style>
+</head>
+<body background="/assets/background.svg">
+	<div id="content">
+		
+		<div style="text-align:center">
+			<img src="/assets/title.svg" alt="Aucguy's Website"></img>
+		</div>
+		
+		
+		<table id="tabs">
+			<tr id="tabsrow">
+				
+				
+				
+					
+					
+					
+					
+<td>
+	<div id="tab-Blog" onmouseover="tabs.showTabList('Blog')" onmouseout="tabs.hideTabList('Blog')">
+		<a href="/index.html">
+			<img src="/assets/tabs/tab-Blog.svg"></img>
+		</a>
+		<table id="tabList-Blog" style="display:none;position:absolute">
+			
+		</table>
+	</div>
+</td>
+
+				
+					
+					
+					
+					
+<td>
+	<div id="tab-Projects" onmouseover="tabs.showTabList('Projects')" onmouseout="tabs.hideTabList('Projects')">
+		<a href="/projects/index.html">
+			<img src="/assets/tabs/tab-Projects.svg"></img>
+		</a>
+		<table id="tabList-Projects" style="display:none;position:absolute">
+			
+				
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/spc.html">
+			<img src="/assets/tabs/item-Projects-spc.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/wavedemo/index.html">
+			<img src="/assets/tabs/item-Projects-Wave Demo.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD30/index.html">
+			<img src="/assets/tabs/item-Projects-Shadows and Lights.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD33/view.html">
+			<img src="/assets/tabs/item-Projects-Minion Army.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD35/view.html">
+			<img src="/assets/tabs/item-Projects-Color Shape Stack.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD36/view.html">
+			<img src="/assets/tabs/item-Projects-Camp Fire Simulator 2016.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD37/view.html">
+			<img src="/assets/tabs/item-Projects-Turtle Fork.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD38/view.html">
+			<img src="/assets/tabs/item-Projects-Planet Carbalsnahps 2.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+					
+					
+					<tr>
+	<td>
+		<a href="/projects/LD42/view.html">
+			<img src="/assets/tabs/item-Projects-Ludum Dare 42.svg"></img>
+		</a>
+	</td>
+</tr>
+				
+			
+		</table>
+	</div>
+</td>
+
+				
+					
+					
+					
+					
+<td>
+	<div id="tab-About" onmouseover="tabs.showTabList('About')" onmouseout="tabs.hideTabList('About')">
+		<a href="/about.html">
+			<img src="/assets/tabs/tab-About.svg"></img>
+		</a>
+		<table id="tabList-About" style="display:none;position:absolute">
+			
+		</table>
+	</div>
+</td>
+
+				
+			</tr>
+		</table>
+		
+		
+		<div class="midsection">
+			
+
+<p>This entry was written in python and must be downloaded in order to run.
+ShadowsAndLightsBuild.zip is the recommended download.
+Everything but ShadowsAndLightsBuild.zip require python 2 and pygame to be installed.
+Building ShadowsAndLights.zip requires cx_freeze to be installed.</p>
+
+<h1 id="downloads">Downloads</h1>
+
+<ul>
+  <li><a href="/downloads/LD30/ShadowsAndLightsBuild.zip">ShadowsAndLightBuild.zip</a> (recommended; no prerequistes to run)</li>
+  <li><a href="/downloads/LD30/ShadowsAndLightsSrc.zip">ShadowsAndLightsSrc.zip</a> (source with build script)</li>
+  <li><a href="/downloads/LD30/dist.zip">dist.zip</a> (original ‘build’ posting from Ludum Dare; requires python 2 and pygame to be installed separately)</li>
+  <li><a href="/downloads/LD30/dist src.zip">dist src.zip</a> (original source code posting from Ludum Dare; no build script)</li>
+</ul>
+
+<p><a href="http://ludumdare.com/compo/ludum-dare-30/?action=preview&amp;uid=41457">Ludum Dare entry</a></p>
+
+
+
+		</div>
+	</div>
+</body>
+</html>

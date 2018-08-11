@@ -1,1 +1,83 @@
-base.registerModule("visual",function(e){function t(e,t,a,n,i){var o=r.makeCanvas(n,i);return o.getContext("2d").drawImage(e,-t,-a),o}var a=base.importModule("util"),r=base.importModule("engine"),n={constructor:base.abstractMethod,textures:base.abstractField};e.graphicsProvider=n,e.setGraphicsProvider=function(t){n=t,e.graphicsProvider=t},e.clipCanvas=t,e.blitCenter=function(e,t,a,r){e.getContext("2d").drawImage(t,a-t.width/2,r-t.width/2)},e.splitSheet=function(e,r,n){for(var i=new a.Dictionary,o=0;o<e.width/r;o++)for(var s=0;s<e.height/n;s++)i.put([o,s],t(e,o*r,s*n,r,n));return i},e.resize=function(e,t,a){var n=r.makeCanvas(t,a).getContext("2d");return n.mozImageSmoothingEnabled=!1,n.msImageSmoothingEnabled=!1,n.imageSmoothingEnabled=!1,n.scale(t/e.width,a/e.height),n.drawImage(e,0,0),n.canvas},e.flipTextures=function(e){for(var t=[],a=0;a<e.length;a++){var n=e[a],i=r.makeCanvas(n.width,n.height).getContext("2d");i.translate(n.width,0),i.scale(-1,1),i.drawImage(n,0,0),t.push(i.canvas)}return t}});
+/**
+ * random visual utilities
+ */
+base.registerModule('visual', function(module) {
+  var util = base.importModule('util');
+  var engine = base.importModule('engine');
+  
+  /**
+   * a graphics provider
+   */
+  var graphicsProvider = {
+    constructor : base.abstractMethod,
+    /**
+     * the textures
+     */
+    textures : base.abstractField
+  };
+  module.graphicsProvider = graphicsProvider;
+  module.setGraphicsProvider = function setGraphicsProvider(provider) {
+    graphicsProvider = provider;
+    module.graphicsProvider = provider;
+  };
+  
+  /**
+   * returns only the given area in a canvas
+   */
+  function clipCanvas(canvas, x, y, width, height) {
+    var clipped = engine.makeCanvas(width, height);
+    clipped.getContext("2d").drawImage(canvas, -x, -y);
+    return clipped;
+  }
+  module.clipCanvas = clipCanvas;
+
+  /**
+   * blits src onto dst so that the center of src is at (x, y)
+   */
+  module.blitCenter = function blitCenter(dst, src, x, y) {
+    dst.getContext("2d").drawImage(src, x - src.width / 2, y - src.width / 2);
+  };
+
+  /**
+   * splits up a spritesheet
+   */
+  module.splitSheet = function splitSheet(sheet, width, height) {
+    var grid = new util.Dictionary();
+    for (var x = 0; x < sheet.width / width; x++) {
+      for (var y = 0; y < sheet.height / height; y++) {
+        grid.put([x, y], clipCanvas(sheet, x * width, y * height, width, height));
+      }
+    }
+    return grid;
+  };
+
+  /**
+   * resizes an pixelatedly image to the desired size TODO make this work in safari and IE
+   */
+  module.resize = function resize(original, width, height) {
+    //help from http://phoboslab.org/log/2012/09/drawing-pixels-is-hard
+    var make = engine.makeCanvas(width, height).getContext("2d");
+    make.mozImageSmoothingEnabled = false;
+    make.msImageSmoothingEnabled = false;
+    make.imageSmoothingEnabled = false;
+    make.scale(width / original.width, height / original.height);
+    make.drawImage(original, 0, 0);
+    return make.canvas;
+  };
+  
+  /**
+   * takes an array of textures and flips them around
+   */
+  module.flipTextures = function flipTextures(original) {
+    var make = [];
+    for (var i = 0; i < original.length; i++) {
+      var img = original[i];
+      var context = engine.makeCanvas(img.width, img.height).getContext('2d');
+      context.translate(img.width, 0);
+      context.scale(-1, 1);
+      context.drawImage(img, 0, 0);
+      make.push(context.canvas);
+    }
+    return make;
+  };
+});

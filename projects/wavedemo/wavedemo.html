@@ -1,1 +1,56 @@
-<!DOCTYPE html> <html> <head> <meta charset="ISO-8859-1"> <title>Wave Demo</title> <script src="base.js"></script> <script src="util.js"></script> <script src="main.js"></script> </head> <body> <div align="center"> <table> <tr> <td> <canvas id="display" width=640, height="480"></canvas> </td> <td> <table> <tr> <td>Node Count: </td> <td><input id="nodeCount" type="number" min="1" max="250" value="10"></input></td> </tr> <tr> <td>Frequency: </td> <td><input id="frequency" type="number" min="1" max="250" value="39"></input></td> </tr> <tr> <td>Amplitude: </td> <td><input id=amplitude type="number" min="1" max="250" value="50"></input></td> </tr> <tr> <td>Tension: </td> <td><input id="tension" type="number" min="1" max="250" value="10"></input></td> </tr> <tr> <td>Friction: </td> <td><input id="friction" type="number" min="1" max="250" value="3"></input></td> </tr> <tr> <td> <button id="sync-settings">Update</button> </td> </tr> </table> </td> </tr> </table> </div> </body> </html>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="ISO-8859-1">
+	<title>Wave Demo</title>
+	
+	<script src="base.js"></script>
+	<script src="util.js"></script>
+	<script src="main.js"></script>
+	
+	</head>
+	<body>
+		<div align="center">
+			<table>
+				<tr>
+					<td>
+						<canvas id="display" width=640, height="480"></canvas>
+					</td>
+					
+					<td>
+						<table>
+							<tr>
+								<td>Node Count: </td>
+								<td><input id="nodeCount" type="number" min="1" max="250" value="10"></input></td>
+							</tr>
+							
+							<tr>
+								<td>Frequency: </td>
+								<td><input id="frequency" type="number" min="1" max="250" value="39"></input></td>
+							</tr>
+							
+							<tr>
+								<td>Amplitude: </td>
+								<td><input id=amplitude type="number" min="1" max="250" value="50"></input></td>
+							</tr>
+							
+							<tr>
+								<td>Tension: </td>
+								<td><input id="tension" type="number" min="1" max="250" value="10"></input></td>
+							</tr>
+							<tr>
+								<td>Friction: </td>
+								<td><input id="friction" type="number" min="1" max="250" value="3"></input></td>
+							</tr>
+							<tr>
+								<td>
+									<button id="sync-settings">Update</button>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>

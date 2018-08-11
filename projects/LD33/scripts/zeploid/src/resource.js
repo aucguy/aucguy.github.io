@@ -1,1 +1,251 @@
-base.registerModule("resource",function(e){function t(){base.onModuleRegistered=function(){i--}}function n(e){u=e}function r(t,n,r,a){i++,e.ajax(o(u,n),function(e){try{var o=r(e.responseText);s[t]=o,null!==a&&a(o,t,n),i--}catch(u){throw i--,u}},function(e){throw i--,new Error("failed to retrieve asset "+t)})}function a(e,t,n){"undefined"==typeof n&&(n=function(t){console.warn("resource "+e+" failed to load with a status of "+t.status)});var r;r=window.XMLHttpRequest?new XMLHttpRequest:new ActiveXObject("Microsoft.XMLHTTP"),r.onreadystatechange=base.external(function(){4==r.readyState&&(200==r.status||0===r.status?t(r):n(r))}),r.open("GET",e,!0),r.send()}function o(){for(var e=[],t=0,n=arguments.length;n>t;t++)""!==arguments[t]&&(e=e.concat(arguments[t].split("/")));var r=[];for(t=0,n=e.length;n>t;t++){var a=e[t];a&&"."!==a&&(".."===a?r.pop():r.push(a))}return""===e[0]&&r.unshift(""),r.join("/")||(r.length?"/":".")}var s={},u=null,i=0;e.setResourcePath=n,e.getResourcePath=function(e){return u},e.getLoading=function(){return i},e.loadResource=r,e.getResource=function(e){return s[e]},e.loadJson=function(e,t,n,a){r(e,t,function(e){return JSON.parse(e)},a)},e.loadImage=function(e,t,n,r){i++;var a=new Image;a.onload=function(){s[e]=a,null!==r&&r(a,e,t),i--},a.src=t},e.loadScript=function(e,t,n,r){i++;var a=document.createElement("script");a.src=t,document.head.appendChild(a),s[e]=a},e.loadXml=function(e,t,n,a){r(e,t,function(e){var t=base.importModule("xml");return t.parseXml(e)},a)};var c={json:e.loadJson,image:e.loadImage,script:e.loadScript,xml:e.loadXml};e.ajax=a,e.query=function(e){var t=e.path;base.assertType(t,"string"),n(t);var r=e.resources;base.assertType(r,Array);for(var a=0;a<r.length;a++){var o=r[a],s=o.id,u=o.type,i=o.url;base.assertType(s,"string"),base.assertType(u,"string"),base.assertType(i,"string"),c[u](s,i,o,null)}},t()});
+/**
+ * handles loading assets
+ */
+base.registerModule('resource', function(module) {
+  /**
+   * a path to resource binding of loaded resources
+   */
+  var resources = {};
+  /**
+   * the path that contains resources
+   */
+  var resource_path = null;
+  /**
+   * how many resources are being loaded
+   */
+  var loading = 0;
+  
+  /**
+   * initializes the module
+   */
+  function init() {
+    base.onModuleRegistered = function() {
+      loading--;
+    };
+  }
+  
+  /**
+   * sets the resource path
+   */
+  function setResourcePath(path) {
+    resource_path = path;
+  }
+  module.setResourcePath = setResourcePath;
+
+  /**
+   * gets the resource path
+   */
+  module.getResourcePath = function(path) {
+    return resource_path;
+  };
+
+  /**
+   * returns how many resources are being loaded
+   */
+  module.getLoading = function() {
+    return loading;
+  };
+
+  /**
+   * load a resource
+   * @param asset
+   *          the path to the asset to load
+   * @param handle 
+   *          translates the file data into an actually asset object 
+   * @param onread
+   *          called when the requested resource is ready to be used
+   */
+  function loadResource(id, url, handle, onready) {
+    loading++;
+    module.ajax(join(resource_path, url), function(request) {
+      try {
+        var resource = handle(request.responseText);
+        resources[id] = resource;
+        if (onready !== null) {
+          onready(resource, id, url);
+        }
+        loading--;
+      } catch (error) {
+        loading--;
+        throw error;
+      }
+    }, function(request) {
+      loading--;
+      throw new Error("failed to retrieve asset " + id);
+    });
+  }
+  module.loadResource = loadResource;
+
+  /**
+   * returns a loaded resource with the given path
+   */
+  module.getResource = function(asset) {
+    return resources[asset];
+  };
+
+  /**
+   * loads json data
+   */
+  module.loadJson = function loadJson(id, url, resource, callback) {
+    loadResource(id, url, function(text) {
+      return JSON.parse(text);
+    }, callback);
+  };
+
+  /**
+   * loads an image
+   */
+  module.loadImage = function loadImage(id, url, resource, callback) {
+    loading++;
+    var image = new Image();
+    image.onload = function() {
+      resources[id] = image;
+      if(callback !== null) {
+        callback(image, id, url);
+      }
+      loading--;
+    };
+    image.src = url;
+  };
+  
+  /**
+   * loads a script. Note the callback doesn't get called
+   */
+  module.loadScript = function loadScript(id, url, resource, callback) {
+    loading++;
+    var element = document.createElement("script");
+    element.src = url;
+    document.head.appendChild(element);
+    resources[id] = element;
+  };
+  
+  /**
+   * handle for loading xml data
+   */
+  module.loadXml = function loadXml(id, url, resource, callback) {
+    loadResource(id, url, function(text) {
+      var xml = base.importModule('xml');
+      return xml.parseXml(text);
+    }, callback);
+  };
+  
+  var loaders = {
+    json : module.loadJson,
+    image : module.loadImage,
+    script : module.loadScript,
+    xml : module.loadXml
+  };
+
+
+  /**
+   * handle for loading svgs
+   * 
+   * module.loadSvg = function loadSvg(text) { var dom = xml.parseXml(text);
+   * xml.removeMetadata(dom); var svg = dom.getElementsByTagName("svg")[0];
+   * var canvas = engine.makeCanvas(safeParseInt(svg.getAttribute("width")),
+   * safeParseInt(svg.getAttribute("height")));
+   * canvas.getContext("2d").drawSvg(dom); return canvas; };
+   */
+
+  /**
+   * sends a request to the server for the given resource
+   */
+  function ajax(path, onready, onfail) {
+    if (typeof onfail == 'undefined') {
+      onfail = function(request) {
+        console.warn("resource " + path + " failed to load with a status of " + request.status);
+      };
+    }
+
+    // taken from
+    // http://www.w3schools.com/ajax/tryit.asp?filename=tryajax_first
+    // and modified
+    var request;
+    if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera,
+      // Safari
+      request = new XMLHttpRequest();
+    } else {// code for IE6, IE5
+      request = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    request.onreadystatechange = base.external(function() {
+      if (request.readyState == 4) {
+        if (request.status == 200 || request.status === 0) {
+          onready(request);
+        } else {
+          onfail(request);
+        }
+      }
+    });
+    request.open("GET", path, true);
+    request.send();
+  }
+  module.ajax = ajax;
+
+  /**
+   * uses a resource manifest to load resources
+   */
+  module.query = function query(manifest) {
+    var path = manifest.path;
+    base.assertType(path, "string");
+    setResourcePath(path);
+    
+    var resources = manifest.resources;
+    base.assertType(resources, Array);
+    for (var i = 0; i < resources.length; i++) {
+      var resource = resources[i];
+      var id = resource.id;
+      var type = resource.type;
+      var url = resource.url;
+
+      base.assertType(id, "string");
+      base.assertType(type, "string");
+      base.assertType(url, "string");
+
+      loaders[type](id, url, resource, null);
+    }
+  };
+
+  // start from https://gist.github.com/creationix/7435851
+
+  // Joins path segments. Preserves initial "/" and resolves ".." and "."
+  // Does not support using ".." to go above/outside the root.
+  // This means that join("foo", "../../bar") will not resolve to "../bar"
+  function join(/* path segments */) {
+    // Split the inputs into a list of path commands.
+    var parts = [];
+    for (var i = 0, l = arguments.length; i < l; i++) {
+      if(arguments[i] !== "")
+        parts = parts.concat(arguments[i].split("/"));
+    }
+    // Interpret the path commands to get the new resolved path.
+    var newParts = [];
+    for (i = 0, l = parts.length; i < l; i++) {
+      var part = parts[i];
+      // Remove leading and trailing slashes
+      // Also remove "." segments
+      if (!part || part === ".")
+        continue;
+      // Interpret ".." to pop the last segment
+      if (part === "..")
+        newParts.pop();
+      // Push new path segments.
+      else
+        newParts.push(part);
+    }
+    // Preserve the initial slash if there was one.
+    if (parts[0] === "")
+      newParts.unshift("");
+
+    // Turn back into a single string path.
+    return newParts.join("/") || (newParts.length ? "/" : ".");
+  }
+
+  // A simple function to get the dirname of a path
+  // Trailing slashes are ignored. Leading slash is preserved.
+  function dirname(path) {
+    return join(path, "..");
+  }
+
+  // end from
+  init();
+});
