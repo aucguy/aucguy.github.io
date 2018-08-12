@@ -9,32 +9,57 @@
         },
         {
             "type": "counter",
-            "left": 265,
+            "left": 220,
             "top": 80,
             "width": 280,
             "height": 560
         },
         {
             "type": "ingredient",
-            "left": 545,
+            "left": 500,
             "top": 80,
-            "width": 95,
-            "height": 320,
+            "width": 140,
+            "height": 280,
             "items": [
                 {
-                    "ingredientType": "flour",
-                    "x": 545,
+                    "ingredientType": "cheese",
+                    "x": 500,
                     "y": 80
                 },
                 {
+                    "ingredientType": "flour",
+                    "x": 500,
+                    "y": 150
+                },
+                {
+                    "ingredientType": "pepper",
+                    "x": 500,
+                    "y": 220
+                },
+                {
+                    "ingredientType": "tomato",
+                    "x": 500,
+                    "y": 290
+                },
+                {
+                    "ingredientType": "water",
+                    "x": 570,
+                    "y": 80
+                },
+                                {
                     "ingredientType": "yeast",
-                    "x": 545,
+                    "x": 570,
                     "y": 150
                 },
                 {
                     "ingredientType": "bowl",
-                    "x": 545,
-                    "y": 200
+                    "x": 570,
+                    "y": 220
+                },
+                {
+                    "ingredientType": "pot",
+                    "x": 570,
+                    "y": 290
                 }
             ]
         },
@@ -42,29 +67,29 @@
             "type": "stove",
             "left": 0,
             "top": 185,
-            "width": 130,
+            "width": 110,
             "height": 455
         },
         {
             "type": "oven",
-            "left": 130,
+            "left": 110,
             "top": 185,
-            "width": 135,
+            "width": 110,
             "height": 455
         },
         {
             "type": "warm",
             "left": 0,
             "top": 80,
-            "width": 265,
+            "width": 220,
             "height": 105
         },
         {
             "type": "garbage",
-            "left": 545,
-            "top": 400,
-            "width": 95,
-            "height": 80
+            "left": 500,
+            "top": 360,
+            "width": 140,
+            "height": 120
         }
     ]
 }
