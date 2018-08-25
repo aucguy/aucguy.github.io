@@ -4,3 +4,4 @@ _site/
 _config/
 node_modules/
 /.metadata/
+public

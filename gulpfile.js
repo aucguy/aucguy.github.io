@@ -35,6 +35,18 @@ function readSite(callback) {
 	});
 }
 
+function compileTemplate(pathname) {
+	var data = fs.readFileSync(path.join('includes', pathname));
+	return ejs.compile(data.toString());
+}
+
+function mkdirs(pathname) {
+	if(!fs.existsSync(pathname)) {
+		mkdirs(path.dirname(pathname));
+		fs.mkdirSync(pathname);
+	}
+}
+
 gulp.task('build', function() {
 	pump([
 		gulp.src('src/**/*.js'),
@@ -42,11 +54,31 @@ gulp.task('build', function() {
 		gulp.dest('public')
 	]);
 	
+	gulp.src(['src/**/*', '!**/*.js', '!**/*.html'])
+		.pipe(gulp.dest('public'))
+	
 	readSite(function(ejsData) {
 		//pump silently swallows errors
 		gulp.src('src/**/*.html')
 			.pipe(gulp_ejs(ejsData))
 			.pipe(gulp.dest('public'));
+		
+		//generate tabs
+		var site = ejsData.site;
+		if(site.tabs) {
+			var tabPath = site.tabs.tab_path;
+			var tabTemplate = compileTemplate(site.tabs.tab_template);
+			var itemPath = site.tabs.item_path;
+			var itemTemplate = compileTemplate(site.tabs.item_template);
+			
+			for(var name in site.tabs.items) {
+				var info = Object.assign({name}, site.tabs.items[name]);
+				var data = Object.assign({tab: info}, ejsData);
+				var pathname = path.join('public', tabPath.replace(':name', info.name));
+				mkdirs(path.dirname(pathname));
+				fs.writeFileSync(pathname, tabTemplate(data));
+			}
+		}
 	});
 });
 

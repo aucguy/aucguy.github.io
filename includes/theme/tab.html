@@ -2,7 +2,7 @@
 <td>
 	<div id="tab-<%- args.name %>" onmouseover="tabs.showTabList('<%- args.name %>')" onmouseout="tabs.hideTabList('<%- args.name %>')">
 		<a href="<%- args.link %>">
-			<img src="/assets/tabs/tab-<%- include.name %>.svg"></img>
+			<img src="/assets/tabs/tab-<%- args.name %>.svg"></img>
 		</a>
 		<table id="tabList-<%- args.name %>" style="display:none;position:absolute">
 			<% if(args.items) { %>
