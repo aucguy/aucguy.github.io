@@ -81,10 +81,10 @@ gulp.task('build', function() {
 				if(site.tabs.items[name].items) {
 					for(var itemname in site.tabs.items[name].items) {
 						var iteminfo = Object.assign({name: itemname, tab: name}, site.tabs.items[name].items[itemname]);
-						var itemdata = Object.assign({tab: info}, ejsData);
+						var itemdata = Object.assign({tab: iteminfo}, ejsData);
 						pathname = path.join('public', itemPath.replace(':name', iteminfo.name).replace(':tab', iteminfo.tab));
 						mkdirs(path.dirname(pathname));
-						fs.writeFileSync(pathname, tabTemplate(data));
+						fs.writeFileSync(pathname, itemTemplate(itemdata));
 					}
 				}
 			}

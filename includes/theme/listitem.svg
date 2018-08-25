@@ -103,6 +103,6 @@
          sodipodi:role="line"
          id="tspan2989"
          x="70.521759"
-         y="1027.0204">&gt; {{ page.tab.name }}</tspan></text>
+         y="1027.0204">&gt; <%- tab.name %></tspan></text>
   </g>
 </svg>
