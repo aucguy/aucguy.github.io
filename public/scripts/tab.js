@@ -1,0 +1,1 @@
+base.registerModule("tabs",function(e){function t(e){return document.getElementById("tabList-"+e)}e.showTabList=base.external(function(e){t(e).style.display="block"}),e.hideTabList=base.external(function(e){t(e).style.display="none"})});

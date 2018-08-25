@@ -1,0 +1,59 @@
+<%# layout for all pages %>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+		<%- args.title %>
+	</title>
+	<%- lib.include('js_utils.html') %>
+	<script>
+  	<%# per-page scripts %> 
+	</script>
+	<script src="/scripts/tab.js"></script>
+	<%- args.scripts() %>
+	<script>base.init()</script>
+	
+	<style>
+	#content
+	{
+		background: white;
+		position: absolute;
+		border: 5px groove gray;
+		left: 10%;
+		width: 80%
+	}
+	#tabs
+	{
+		position:relative;
+		left:7%;
+		z-index:3
+	}
+	</style>
+</head>
+<body background="/assets/background.svg">
+	<div id="content">
+		<%# banner at top of page %>
+		<div style="text-align:center">
+			<img src="/assets/title.svg" alt="Aucguy's Website"></img>
+		</div>
+		
+		<%# the tabs %>
+		<table id="tabs">
+			<tr id="tabsrow">
+				<% for(var name in site.tabs.items) { %>
+					<%- lib.include('theme/tab.html', {
+						name,
+						link: site.tabs.items[name].link,
+						items: site.tabs.items[name].items
+					}) %>
+				<% } %>
+			</tr>
+		</table>
+		
+		<%# actual content %>
+		<div class="midsection">
+			<%- args.midsection() %>
+		</div>
+	</div>
+</body>
+</html>

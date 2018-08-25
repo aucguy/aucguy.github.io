@@ -1,0 +1,24 @@
+<%# page layout for feed pages. These view posts %>
+{% get_paginate main 3 1 %}
+
+{{ include.section_header }}
+<% function midsection() { %>
+	<div id="posts">
+		<%- lib.include('paginate.html') %>
+	</div>
+	<p></p>
+	<div id="loadButton" style="display:none;position:relative;left:10%;margin:5px">
+		<button type="button" onclick="posts.loadPosts()">load more posts</button>
+	</div>
+	<p></p>
+<% } %>
+
+<%# custom scripts %>
+<% function scripts() { %>
+	<% if(args.scripts) { %>
+		<%- scripts %>
+	<% } %>
+	<script src="scripts/posts.js"></script>
+<% } %>
+
+<%- lib.include('theme/theme.html', { title: args.title, midsection, scripts }) %>

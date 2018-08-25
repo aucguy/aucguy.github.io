@@ -1,0 +1,19 @@
+<%# template for a tab at the top of the page %>
+<td>
+	<div id="tab-<%- args.name %>" onmouseover="tabs.showTabList('<%- args.name %>')" onmouseout="tabs.hideTabList('<%- args.name %>')">
+		<a href="<%- args.link %>">
+			<img src="/assets/tabs/tab-<%- include.name %>.svg"></img>
+		</a>
+		<table id="tabList-<%- args.name %>" style="display:none;position:absolute">
+			<% if(args.items) { %>
+				<% for(var name in args.items) { %>
+					<%- lib.include('theme/listitem.html', {
+						tabname: args.name,
+						name,
+						link: args.items[name].link
+					}) %>
+				<% } %>
+			<% } %>
+		</table>
+	</div>
+</td>
