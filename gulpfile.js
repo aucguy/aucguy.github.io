@@ -165,6 +165,9 @@ gulp.task('serve', ['build'], function() {
 	var server = http.createServer(function(request, response) {
 		var name = url.parse(request.url).pathname;
 		if(name === '/close') {
+			response.statusCode = 200;
+			response.setHeader('content-type', 'text/plain');
+			response.end('server shut down');
 			server.close();
 		} else {
 			return serveHandler(request, response, {
