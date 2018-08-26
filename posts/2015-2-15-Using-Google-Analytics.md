@@ -8,4 +8,4 @@ you can disable it [here](https://tools.google.com/dlpage/gaoptout).
 
 Note as of after the post: I don't bother to check Google Analytics Anyway, so I removed it.
 
-Edit {% date %}2017-28-3{% enddate %}: Many grammer fixes and removal status
+Edit March 28, 2017: Many grammer fixes and removal status

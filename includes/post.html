@@ -1,8 +1,8 @@
 <p></p>
 <div style="position:relative;left:3%;width:95%;border:3px solid gray">
 	<div style="line-height:1%">
-		<h2 style="text-indent:1%">{{ include.title }}</h2>
-		<h4 style="text-indent:5%">{% date %}{{ include.date }}{% enddate %}</h4>
+		<h2 style="text-indent:1%"><%- frontMatter.title %></h2>
+		<h4 style="text-indent:5%"><%- lib.date(date) %></h4>
 	</div>
-	<div style="text-indent:3%">{{ include.content }}</div>
+	<div style="text-indent:3%"><%- content %></div>
 </div>

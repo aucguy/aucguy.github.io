@@ -5,9 +5,16 @@ const url = require('url');
 const gulp = require('gulp');
 const pump = require('pump');
 const uglify = require('gulp-uglify');
+const extReplace = require('gulp-ext-replace');
 const gulp_ejs = require('gulp-ejs');
 const ejs = require('ejs');
+const markdown = require('markdown').markdown;
 const serveHandler = require('serve-handler');
+const through2 = require('through2');
+const Vinyl = require('vinyl');
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+	'July', 'August', 'September', 'October', 'November', 'December'];
 
 function readSite(callback) {
 	fs.readFile('config.json', function(err, data) {
@@ -24,6 +31,10 @@ function readSite(callback) {
 					args,
 					site
 				});
+			},
+			date: function(date) {
+				var parts = date.split('-');
+				return MONTHS[parseInt(parts[1]) - 1] + ' ' + parts[2] + ', ' + parts[0];
 			}
 		}
 		
@@ -38,6 +49,59 @@ function readSite(callback) {
 function compileTemplate(pathname) {
 	var data = fs.readFileSync(path.join('includes', pathname));
 	return ejs.compile(data.toString());
+}
+
+function formatPost(ejsData, postTemplatePath) {
+	var postTemplate = compileTemplate(postTemplatePath);
+	return through2.obj(function(file, enc, callback) {
+		var parts = path.basename(file.path).split('-');
+		var date = parts[0] + '-' + parts[1] + '-' + parts[2];
+		
+		parts = splitFrontMatter(file.contents.toString(enc));
+		var data = Object.assign({ date, frontMatter: parts.frontMatter }, ejsData);
+		var content = ejs.render(markdown.toHTML(parts.body), data);
+		data = Object.assign({ content }, data);
+		
+		this.push(new Vinyl({
+			cwd: file.cwd,
+			base: file.base,
+			path: file.path,
+			contents: Buffer.from(postTemplate(data), enc)
+		}));
+		callback();
+	});
+}
+
+function splitFrontMatter(str) {
+	if(str.trim().startsWith('---')) {
+		var beginIndex = str.indexOf('---');
+		endIndex = str.indexOf('---', beginIndex + 1);
+		if(endIndex == -1) {
+			return {
+				frontMatter: {},
+				body: str
+			};
+		} else {
+			var frontMatterStr = str.substring(beginIndex + '---'.length, endIndex);
+			var frontMatter = {};
+			for(var line of frontMatterStr.split(/[\n\r]+/g)) {
+				var colonIndex = line.indexOf(':');
+				if(colonIndex != -1) {
+					var parts = line.split(':');
+					frontMatter[parts[0].trim()] = parts[1].trim();
+				}
+			}
+			return {
+				frontMatter,
+				body: str.substring(endIndex + '---'.length)
+			};
+		}
+	} else {
+		return {
+			frontMatter: {},
+			body: str
+		};
+	}
 }
 
 function mkdirs(pathname) {
@@ -55,13 +119,18 @@ gulp.task('build', function() {
 	]);
 	
 	gulp.src(['src/**/*', '!**/*.js', '!**/*.html'])
-		.pipe(gulp.dest('public'))
+		.pipe(gulp.dest('public'));
 	
 	readSite(function(ejsData) {
 		//pump silently swallows errors
 		gulp.src('src/**/*.html')
 			.pipe(gulp_ejs(ejsData))
 			.pipe(gulp.dest('public'));
+		
+		gulp.src('posts/**/*.md')
+			.pipe(formatPost(ejsData, 'post.html'))
+			.pipe(extReplace('.html'))
+			.pipe(gulp.dest('public/posts'));
 		
 		//generate tabs
 		var site = ejsData.site;
