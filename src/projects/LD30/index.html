@@ -1,9 +1,5 @@
----
-title: Ludum Dare 30 entry (Shadows and Lights)
----
-
-{% capture midsection %}
-{% markdown %}
+<% function midsection(__append) { %>
+<%- lib.markdown(`
 This entry was written in python and must be downloaded in order to run.
 ShadowsAndLightsBuild.zip is the recommended download.
 Everything but ShadowsAndLightsBuild.zip require python 2 and pygame to be installed.
@@ -18,7 +14,7 @@ Building ShadowsAndLights.zip requires cx_freeze to be installed.
 
 [Ludum Dare entry](http://ludumdare.com/compo/ludum-dare-30/?action=preview&uid=41457)
 
-{% endmarkdown %}
-{% endcapture %}
+`); %>
+<% } %>
 
-{% include theme/theme.html midsection=midsection %}
+<%- lib.include('theme/theme.html', { midsection, title: 'Ludum Dare 30 entry (Shadows and Lights)' }) %>

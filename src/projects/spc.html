@@ -1,10 +1,6 @@
----
-title: Single Player Commands
----
-
-{% capture midsection %}
+<% function midsection(__append) { %>
 <div style="position:relative;left:2%">
-{% markdown %}
+<%- lib.markdown(`
 This is a continuation/update of sijobe\'s spc mod.
 
 #Installation
@@ -24,8 +20,8 @@ This is a continuation/update of sijobe\'s spc mod.
 * [5.2-1.7.10](/downloads/spc/spc-5.2-1.7.10.jar)
 * [5.1-1.7.10](/downloads/spc/spc-5.1-1.7.10.jar)
 * [5.0-1.7.2](/downloads/spc/spc-5.0-1.7.2.jar)
-{% endmarkdown %}
+`) %>
 </div>
-{% endcapture %}
+<% } %>
 
-{% include theme/theme.html midsection=midsection %}
+<%- lib.include('theme/theme.html', { midsection, title: 'Single Player Commands' }) %>

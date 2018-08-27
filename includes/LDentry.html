@@ -1,20 +1,16 @@
-{% capture midsection %}
+<% function midsection(__append) { %>
 <div style="position:relative;left:2%">
 <h1>
-	{% if include.title %}
-		{{ include.title }}
-	{% else %}
-		{{ page.title }}
-	{% endif %}
+	<%- args.title %>
 </h1>
-<iframe src="{{ include.game }}" width="700px" height="500px"></iframe>
+<iframe src="<%- args.game %>" width="700px" height="500px"></iframe>
 <p>
-	<a href="{{ include.game }}">Click here if scrolling is a problem</a>
+	<a href="<%- args.game %>">Click here if scrolling is a problem</a>
 </p>
 <p>
-	<a href="{{ include.entryLink }}">Ludum Dare Entry</a>
+	<a href="<%- args.entryLink %>">Ludum Dare Entry</a>
 </p>
 </div>
-{% endcapture %}
+<% } %>
 
-{% include theme/theme.html midsection=midsection %}
+<%- lib.include('theme/theme.html', { midsection }) %>

@@ -1,15 +1,10 @@
----
-title: Wave Demo
----
-
-{% capture midsection %}
+<% function midsection(__append) { %>
 <div style="position:relative;left:2%">
-{% markdown %}
+<%- lib.markdown(`
 A wave simulator that I built to understand waves better.
-{% endmarkdown %}
+`) %> 
 </div>
 <iframe src="/projects/wavedemo/wavedemo.html" style="border:none;width:100%;height:530px"></iframe>
+<% } %>
 
-{% endcapture %}
-
-{% include theme/theme.html midsection=midsection %}
+<%- lib.include('theme/theme.html', { midsection, title: 'Wave Demo' }) %>

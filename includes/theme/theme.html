@@ -10,7 +10,9 @@
   	<%# per-page scripts %> 
 	</script>
 	<script src="/scripts/tab.js"></script>
-	<%- args.scripts(__append) %>
+	<% if(args.scripts) { %>
+		<% args.scripts(__append) %>
+	<% } %>
 	<script>base.init()</script>
 	
 	<style>

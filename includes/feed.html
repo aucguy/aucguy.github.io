@@ -16,7 +16,7 @@
 <%# custom scripts %>
 <% var scripts = function(__append) { %>
 	<% if(args.scripts) { %>
-		<%- args.scripts(__append) %>
+		<% args.scripts(__append) %>
 	<% } %>
 	<script src="scripts/posts.js"></script>
 <% } %>

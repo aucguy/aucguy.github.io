@@ -42,6 +42,9 @@ function readSite(callback) {
 			date: function(date) {
 				var parts = date.split('-');
 				return MONTHS[parseInt(parts[1]) - 1] + ' ' + parts[2] + ', ' + parts[0];
+			},
+			markdown: function(content) {
+				return markdown.toHTML(content);
 			}
 		}
 		
