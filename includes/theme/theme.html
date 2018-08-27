@@ -10,7 +10,7 @@
   	<%# per-page scripts %> 
 	</script>
 	<script src="/scripts/tab.js"></script>
-	<%- args.scripts() %>
+	<%- args.scripts(__append) %>
 	<script>base.init()</script>
 	
 	<style>
@@ -52,7 +52,7 @@
 		
 		<%# actual content %>
 		<div class="midsection">
-			<%- args.midsection() %>
+			<%- args.midsection(__append) %>
 		</div>
 	</div>
 </body>

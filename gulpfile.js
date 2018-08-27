@@ -12,9 +12,12 @@ const markdown = require('markdown').markdown;
 const serveHandler = require('serve-handler');
 const through2 = require('through2');
 const Vinyl = require('vinyl');
+const glob = require('glob');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
+
+const POSTS_PER_PAGINATE = 3;
 
 function readSite(callback) {
 	fs.readFile('config.json', function(err, data) {
@@ -24,13 +27,16 @@ function readSite(callback) {
 		var site = JSON.parse(data.toString());
 		
 		var lib = {
-			include: function(file, args) {
-				var data = fs.readFileSync(path.join('includes', file));
+			includePage: function(file, args) {
+				var data = fs.readFileSync(file);
 				return ejs.render(data.toString(), {
 					lib,
 					args,
 					site
 				});
+			},
+			include: function(file, args) {
+				return lib.includePage(path.join('includes', file), args);
 			},
 			date: function(date) {
 				var parts = date.split('-');
@@ -104,6 +110,44 @@ function splitFrontMatter(str) {
 	}
 }
 
+function generatePaginates(ejsData) {
+	var files = glob.sync('public/posts/**/*.html');
+	files.sort(function(a, b) {
+		var partsA = a.split('-');
+		var partsB = b.split('-');
+		for(var i = 0; i < 3; i++) {
+			if(partsA[i] < partsB[i]) {
+				return -1;
+			} else if(partsA[i] > partsB[i]) {
+				return 1;
+			}
+		}
+		//TODO remove this restriction
+		throw('multi posts per day not allowed');
+	});
+	files.reverse(); //so its newest to oldest
+	
+	mkdirs('public/paginates');
+	var paginateTemplate = compileTemplate('paginate.html');
+	var numPaginates = Math.ceil(files.length / POSTS_PER_PAGINATE);
+	for(var i = 0; i < numPaginates; i++) {
+		var nextPage;
+		if(i == numPaginates - 1) {
+			nextPage = null;
+		} else {
+			nextPage = `paginates/paginate${i}.html`;
+		}
+		var posts = files.slice(i * numPaginates, (i + 1) * numPaginates);
+		var contents = paginateTemplate(Object.assign({
+			paginator: {
+				nextPage,
+				posts
+			}
+		}, ejsData));
+		fs.writeFileSync(`public/paginates/paginate${i}.html`, contents);
+	}
+}
+
 function mkdirs(pathname) {
 	if(!fs.existsSync(pathname)) {
 		mkdirs(path.dirname(pathname));
@@ -122,15 +166,17 @@ gulp.task('build', function() {
 		.pipe(gulp.dest('public'));
 	
 	readSite(function(ejsData) {
-		//pump silently swallows errors
-		gulp.src('src/**/*.html')
-			.pipe(gulp_ejs(ejsData))
-			.pipe(gulp.dest('public'));
-		
 		gulp.src('posts/**/*.md')
-			.pipe(formatPost(ejsData, 'post.html'))
-			.pipe(extReplace('.html'))
-			.pipe(gulp.dest('public/posts'));
+		.pipe(formatPost(ejsData, 'post.html'))
+		.pipe(extReplace('.html'))
+		.pipe(gulp.dest('public/posts'))
+		.on('end', function() {
+			generatePaginates(ejsData);
+			//pump silently swallows errors
+			gulp.src('src/**/*.html')
+				.pipe(gulp_ejs(ejsData))
+				.pipe(gulp.dest('public'));
+		});
 		
 		//generate tabs
 		var site = ejsData.site;

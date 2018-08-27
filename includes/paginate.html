@@ -1,19 +1,17 @@
-<div>
-	{% assign paginator = include.paginator %}
-	
+<div>	
 	<div id="indexData" style="display:none">
 		{
-			{% if paginator.next_page %}
-				"nextPage": "{{ paginator.next_page_path }}"
-			{% else %}
+			<% if(paginator.next_page) { %>
+				"nextPage": "<%- paginator.next_page %>"
+			{% } else { %>
 				"nextPage": "null"
-			{% endif %}
+			<% } %>
 		}
 	</div>
 	
-	{% for post in paginator.posts %}
-		{% include post.html title=post.title date=post.date content=post.content %}
-	{% endfor %}
+	<% for(var post of paginator.posts) { %>
+		<%- lib.includePage(post) %>
+	<% } %>
     
 	{% if paginator.next_page %}
 		<noscript>
