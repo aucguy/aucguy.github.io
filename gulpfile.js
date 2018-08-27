@@ -13,6 +13,7 @@ const serveHandler = require('serve-handler');
 const through2 = require('through2');
 const Vinyl = require('vinyl');
 const glob = require('glob');
+const del = require('del');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
@@ -156,6 +157,8 @@ function mkdirs(pathname) {
 }
 
 gulp.task('build', function() {
+	del.sync('public/**/*');
+	
 	pump([
 		gulp.src('src/**/*.js'),
 		uglify(),

@@ -4,6 +4,7 @@
   "description": "Aucguy's website",
   "main": "none",
   "dependencies": {
+    "del": "^3.0.0",
     "ejs": "^2.6.1",
     "glob": "^7.1.2",
     "gulp": "^3.9.1",
