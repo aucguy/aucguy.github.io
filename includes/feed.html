@@ -1,7 +1,4 @@
 <%# page layout for feed pages. These view posts %>
-{% get_paginate main 3 1 %}
-
-{{ include.section_header }}
 <% var midsection = function(__append) { %>
 	<div id="posts">
 		<%- lib.includePage('public/paginates/paginate0.html') %>
