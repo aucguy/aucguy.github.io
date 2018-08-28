@@ -136,9 +136,9 @@ function generatePaginates(ejsData) {
 	for(var i = 0; i < numPaginates; i++) {
 		var nextPage;
 		if(i == numPaginates - 1) {
-			nextPage = null;
+			nextPage = 'null';
 		} else {
-			nextPage = `paginates/paginate${i}.html`;
+			nextPage = `/paginates/paginate${i + 1}.html`;
 		}
 		var posts = files.slice(i * numPaginates, (i + 1) * numPaginates);
 		var contents = paginateTemplate(Object.assign({

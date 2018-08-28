@@ -1,9 +1,9 @@
 <div>	
 	<div id="indexData" style="display:none">
 		{
-			<% if(paginator.next_page) { %>
-				"nextPage": "<%- paginator.next_page %>"
-			{% } else { %>
+			<% if(paginator.nextPage) { %>
+				"nextPage": "<%- paginator.nextPage %>"
+			<% } else { %>
 				"nextPage": "null"
 			<% } %>
 		}

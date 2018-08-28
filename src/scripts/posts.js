@@ -31,8 +31,7 @@ base.registerModule('posts', function(module) {
 			} catch(error) {
 				return;
 			}
-			if(typeof data.nextPage === 'string' && data.nextPage != 'null' 
-					&& data.nextPage.startsWith('/')) {
+			if(typeof data.nextPage === 'string' && data.nextPage !== 'null') {
 				nextPage = data.nextPage;
 			}
 		}
