@@ -5,3 +5,4 @@ _config/
 node_modules/
 /.metadata/
 public
+siteData.json

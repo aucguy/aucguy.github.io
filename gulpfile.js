@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const http = require('http');
 const url = require('url');
+const child_process = require('child_process');
+const crypto = require('crypto');
 const gulp = require('gulp');
 const pump = require('pump');
 const uglify = require('gulp-uglify');
@@ -9,11 +10,11 @@ const extReplace = require('gulp-ext-replace');
 const gulp_ejs = require('gulp-ejs');
 const ejs = require('ejs');
 const markdown = require('markdown').markdown;
-const serveHandler = require('serve-handler');
 const through2 = require('through2');
 const Vinyl = require('vinyl');
 const glob = require('glob');
 const del = require('del');
+const server = require('node-http-server');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
@@ -152,6 +153,84 @@ function generatePaginates(ejsData) {
 	}
 }
 
+function globFiles(globPattern) {
+	var files = [];
+	for(var pattern of globPattern) {
+		var exclude;
+		if(pattern[0] == '!') {
+			exclude == true;
+			pattern = pattern.substring(1);
+		} else {
+			exclude = false;
+		}
+		var matched = glob.sync(pattern);
+		if(exclude) {
+			files = files.filter(item => matched.indexOf(item) == -1);
+		} else {
+			files = files.concat(matched);
+		}
+	}
+	return files;
+}
+
+function globFiles(globPattern, ignore) {
+	return glob.sync(globPattern, {
+		ignore
+	});
+}
+
+function lastModified(files) {
+	var lastModified = 0;
+	for(var file of files) {
+		var stat = fs.lstatSync(file);
+		if(stat.mtimeMs > lastModified) {
+			lastModified = stat.mtimeMs;
+		}
+	}
+	return lastModified;
+}
+
+function contentHash(files) {
+	var hash = crypto.createHash('sha256');
+	for(var file of files) {
+		hash.update(file);
+		hash.update(',');
+	}
+	return hash.digest('hex');
+}
+
+function outputBuild(outputBuild, oldSiteData) {
+	debugger;
+	var newSiteData = {};
+	for(var build of outputBuild) {
+		var buildDir = path.join(build.dir, build.build, '**/*');
+		var excludeDir = path.join(build.dir, build.exclude);
+		var files = globFiles(path.join(build.dir, '**/*'), [buildDir, excludeDir]);
+		
+		var modified = lastModified(files);
+		var hash = contentHash(files);
+		var saved = oldSiteData[build.dir];
+		
+		if(!saved ||
+				modified > saved.lastModified || 
+				hash !== saved.contentHash) {
+			console.log('building ' + build.dir);
+			child_process.execSync(build.cmd, {
+				cwd: build.dir
+			});
+			var files = globFiles(path.join(build.dir, '**/*'), [buildDir, excludeDir]);
+			modified = lastModified(files);
+			hash = contentHash(files);
+		}
+		newSiteData[build.dir] = {
+			lastModified: modified,
+			contentHash: hash
+		};
+		gulp.src(buildDir).pipe(gulp.dest(path.join('public', build.output)));
+	}
+	return newSiteData;
+}
+
 function mkdirs(pathname) {
 	if(!fs.existsSync(pathname)) {
 		mkdirs(path.dirname(pathname));
@@ -210,22 +289,29 @@ gulp.task('build', function() {
 				}
 			}
 		}
+		
+		var oldSiteData;
+		if(fs.existsSync('siteData.json')) {
+			oldSiteData = JSON.parse(fs.readFileSync('siteData.json'));
+		} else {
+			oldSiteData = {};
+		}
+		
+		var newSiteData = {};
+		if(site.outputBuild) {
+			newSiteData.outputBuild = outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
+		}
+		fs.writeFileSync('siteData.json', JSON.stringify(newSiteData));
+		console.log('finished build');
 	});
 });
 
 gulp.task('serve', ['build'], function() {
-	var server = http.createServer(function(request, response) {
-		var name = url.parse(request.url).pathname;
-		if(name === '/close') {
-			response.statusCode = 200;
-			response.setHeader('content-type', 'text/plain');
-			response.end('server shut down');
-			server.close();
-		} else {
-			return serveHandler(request, response, {
-				public: 'public'
-			});
+	var config = new server.Config();
+	config.port = 8080;
+	config.onRequest = (request, response, serve) => {
+		if(request.query.close) {
+			
 		}
-	});
-	server.listen(8080);
+	}
 });
