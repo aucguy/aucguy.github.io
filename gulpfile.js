@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const url = require('url');
 const child_process = require('child_process');
 const crypto = require('crypto');
 const gulp = require('gulp');
@@ -14,7 +13,6 @@ const through2 = require('through2');
 const Vinyl = require('vinyl');
 const glob = require('glob');
 const del = require('del');
-const server = require('node-http-server');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
@@ -304,14 +302,4 @@ gulp.task('build', function() {
 		fs.writeFileSync('siteData.json', JSON.stringify(newSiteData));
 		console.log('finished build');
 	});
-});
-
-gulp.task('serve', ['build'], function() {
-	var config = new server.Config();
-	config.port = 8080;
-	config.onRequest = (request, response, serve) => {
-		if(request.query.close) {
-			
-		}
-	}
 });
