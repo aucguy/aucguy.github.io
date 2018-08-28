@@ -151,26 +151,6 @@ function generatePaginates(ejsData) {
 	}
 }
 
-function globFiles(globPattern) {
-	var files = [];
-	for(var pattern of globPattern) {
-		var exclude;
-		if(pattern[0] == '!') {
-			exclude == true;
-			pattern = pattern.substring(1);
-		} else {
-			exclude = false;
-		}
-		var matched = glob.sync(pattern);
-		if(exclude) {
-			files = files.filter(item => matched.indexOf(item) == -1);
-		} else {
-			files = files.concat(matched);
-		}
-	}
-	return files;
-}
-
 function globFiles(globPattern, ignore) {
 	return glob.sync(globPattern, {
 		ignore
