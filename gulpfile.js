@@ -223,33 +223,48 @@ function contentHash(files) {
 	return hash.digest('hex');
 }
 
+async function createRepo(data, oldSiteData) {
+	var obj = {
+		repoDir: data.dir,
+		repoDirGlob: path.join(data.dir, '**/*'),
+		buildDir: path.join(data.dir, data.build, '**/*'),
+		outputDir: path.join(data.output),
+		cmd: data.cmd,
+		lastModified: oldSiteData[data.dir] ? oldSiteData[data.dir].lastModified : -1,
+		contentHash: oldSiteData[data.dir] ? oldSiteData[data.dir].contentHash : null,
+		excludes: null,
+		files: null
+	};
+	obj.excludes = [obj.buildDir, path.join(data.dir, data.exclude)];
+	obj.files = await globFiles(obj.repoDirGlob, obj.excludes);
+	return obj;
+}
+
+function needsRebuild(repo, modified, hash) {
+	return modified > repo.lastModified || hash !== repo.contentHash;
+}
+
 async function outputBuild(outputBuild, oldSiteData) {
 	var newSiteData = {};
-	for(var build of outputBuild) {
-		var buildDir = path.join(build.dir, build.build, '**/*');
-		var excludeDir = path.join(build.dir, build.exclude);
-		var files = await globFiles(path.join(build.dir, '**/*'), [buildDir, excludeDir]);
+	for(var repoData of outputBuild) {
+		var repo = await createRepo(repoData, oldSiteData);
+		var modified = await lastModified(repo.files);
+		var hash = contentHash(repo.files);
 		
-		var modified = await lastModified(files);
-		var hash = contentHash(files);
-		var saved = oldSiteData[build.dir];
-		
-		if(!saved ||
-				modified > saved.lastModified || 
-				hash !== saved.contentHash) {
-			console.log('building ' + build.dir);
-			await exec(build.cmd, {
-				cwd: build.dir
+		if(needsRebuild(repo, modified, hash)) {
+			console.log('building ' + repo.repoDir);
+			await exec(repo.cmd, {
+				cwd: repo.repoDir
 			});
-			var files = await globFiles(path.join(build.dir, '**/*'), [buildDir, excludeDir]);
+			var files = await globFiles(repo.repoDirGlob, repo.excludes);
 			modified = await lastModified(files);
 			hash = contentHash(files);
 		}
-		newSiteData[build.dir] = {
+		newSiteData[repo.repoDir] = {
 			lastModified: modified,
 			contentHash: hash
 		};
-		gulp.src(buildDir).pipe(gulp.dest(path.join('public', build.output)));
+		gulp.src(repo.buildDir).pipe(gulp.dest(path.join('public', repo.outputDir)));
 	}
 	return newSiteData;
 }
