@@ -138,7 +138,7 @@ async function formatPost(ejsData, postTemplatePath) {
 		parts = splitFrontMatter(file.contents.toString(enc));
 		var data = Object.assign({ date, frontMatter: parts.frontMatter }, ejsData);
 		var content = ejs.render(markdown.toHTML(parts.body), data);
-		data = Object.assign({ content }, data);
+		data.content = content;
 		
 		this.push(new Vinyl({
 			cwd: file.cwd,
@@ -151,35 +151,27 @@ async function formatPost(ejsData, postTemplatePath) {
 }
 
 function splitFrontMatter(str) {
-	if(str.trim().startsWith('---')) {
-		var beginIndex = str.indexOf('---');
-		endIndex = str.indexOf('---', beginIndex + 1);
-		if(endIndex == -1) {
-			return {
-				frontMatter: {},
-				body: str
-			};
-		} else {
-			var frontMatterStr = str.substring(beginIndex + '---'.length, endIndex);
-			var frontMatter = {};
-			for(var line of frontMatterStr.split(/[\n\r]+/g)) {
-				var colonIndex = line.indexOf(':');
-				if(colonIndex != -1) {
-					var parts = line.split(':');
-					frontMatter[parts[0].trim()] = parts[1].trim();
-				}
-			}
-			return {
-				frontMatter,
-				body: str.substring(endIndex + '---'.length)
-			};
-		}
-	} else {
+	var beginIndex = str.indexOf('---');
+	var endIndex = str.indexOf('---', beginIndex + 1);
+	if(!str.trim().startsWith('---') || endIndex === -1) {
 		return {
 			frontMatter: {},
 			body: str
-		};
+		}
 	}
+	
+	var frontMatter = {};
+	var frontMatterStr = str.substring(beginIndex + '---'.length, endIndex);
+	for(var line of frontMatterStr.split(/[\n\r]+/g)) {
+		var parts = line.split(':');
+		if(parts.length > 1) {
+			frontMatter[parts[0].trim()] = parts[1].trim();
+		}
+	}
+	return {
+		frontMatter,
+		body: str.substring(endIndex + '---'.length)
+	};
 }
 
 async function generatePaginates(ejsData) {
