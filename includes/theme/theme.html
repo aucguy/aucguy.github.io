@@ -42,12 +42,8 @@
 		<%# the tabs %>
 		<table id="tabs">
 			<tr id="tabsrow">
-				<% for(var name in site.tabs.items) { %>
-					<%- lib.include('theme/tab.html', {
-						name,
-						link: site.tabs.items[name].link,
-						items: site.tabs.items[name].items
-					}) %>
+				<% for(var tab of site.tabs.items) { %>
+					<%- lib.include('theme/tab.html', tab) %>
 				<% } %>
 			</tr>
 		</table>

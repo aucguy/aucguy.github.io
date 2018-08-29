@@ -261,6 +261,36 @@ async function mkdirs(pathname) {
 	}
 }
 
+async function createTabElement(ejsData, info, tab, pathTemplate, contentTemplate) {
+	var pathname = pathTemplate.replace(':name', info.name).replace(':tab', tab.name);
+	pathname = path.join('public', pathname);
+	
+	var data = Object.assign({ tab: info }, ejsData);
+	await mkdirs(path.dirname(pathname));
+	await writeFile(pathname, contentTemplate(data));
+}
+
+async function generateTabs(ejsData) {
+	var tabs = ejsData.site.tabs;
+	if(!tabs) {
+		return;
+	}
+	var tabPath = tabs.tabPath;
+	var itemPath = tabs.itemPath;
+	var tabTemplate = await compileTemplate(tabs.tabTemplate);
+	var itemTemplate = await compileTemplate(tabs.itemTemplate);
+	var promises = [];
+	
+	for(var tab of tabs.items) {
+		await createTabElement(ejsData, tab, tab, tabPath, tabTemplate);
+		if(tab.items) {
+			for(var item of tab.items) {
+				await createTabElement(ejsData, item, tab, itemPath, itemTemplate);
+			}
+		}
+	}
+}
+
 async function build() {
 	await del('public/**/*');
 	
@@ -286,33 +316,7 @@ async function build() {
 				.pipe(gulp.dest('public'));
 		});
 	
-	//generate tabs
-	var site = ejsData.site;
-	if(site.tabs) {
-		var tabPath = site.tabs.tab_path;
-		var tabTemplate = await compileTemplate(site.tabs.tab_template);
-		var itemPath = site.tabs.item_path;
-		var itemTemplate = await compileTemplate(site.tabs.item_template);
-		
-		for(var name in site.tabs.items) {
-			var info = Object.assign({name}, site.tabs.items[name]);
-			var data = Object.assign({tab: info}, ejsData);
-			var pathname = path.join('public', tabPath.replace(':name', info.name));
-			
-			await mkdirs(path.dirname(pathname));
-			await writeFile(pathname, tabTemplate(data));
-			
-			if(site.tabs.items[name].items) {
-				for(var itemname in site.tabs.items[name].items) {
-					var iteminfo = Object.assign({name: itemname, tab: name}, site.tabs.items[name].items[itemname]);
-					var itemdata = Object.assign({tab: iteminfo}, ejsData);
-					pathname = path.join('public', itemPath.replace(':name', iteminfo.name).replace(':tab', iteminfo.tab));
-					await mkdirs(path.dirname(pathname));
-					await writeFile(pathname, itemTemplate(itemdata));
-				}
-			}
-		}
-	}
+	await generateTabs(ejsData);
 	
 	var oldSiteData;
 	if(await exists('siteData.json')) {
@@ -321,6 +325,7 @@ async function build() {
 		oldSiteData = {};
 	}
 	
+	var site = ejsData.site;
 	var newSiteData = {};
 	if(site.outputBuild) {
 		newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});

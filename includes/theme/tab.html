@@ -6,12 +6,8 @@
 		</a>
 		<table id="tabList-<%- args.name %>" style="display:none;position:absolute">
 			<% if(args.items) { %>
-				<% for(var name in args.items) { %>
-					<%- lib.include('theme/listitem.html', {
-						tabname: args.name,
-						name,
-						link: args.items[name].link
-					}) %>
+				<% for(var item of args.items) { %>
+					<%- lib.include('theme/listitem.html', Object.assign({ tabname: args.name}, item)) %>
 				<% } %>
 			<% } %>
 		</table>

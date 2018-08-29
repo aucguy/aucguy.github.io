@@ -7,50 +7,62 @@
 		}
 	},
 	"tabs": {
-		"tab_path": "assets/tabs/tab-:name.svg",
-		"tab_template": "theme/tab.svg",
-		"item_path": "assets/tabs/item-:tab-:name.svg",
-		"item_template": "theme/listitem.svg",
-		"items": {
-			"Blog": {
+		"tabPath": "assets/tabs/tab-:name.svg",
+		"tabTemplate": "theme/tab.svg",
+		"itemPath": "assets/tabs/item-:tab-:name.svg",
+		"itemTemplate": "theme/listitem.svg",
+		"items": [
+			{
+				"name": "Blog",
 				"link": "/index.html"
 			},
-			"Projects": {
+			{
+				"name": "Projects",
 				"link": "/projects/index.html",
-				"items": {
-					"spc": {
+				"items": [
+					{
+						"name": "spc",
 						"link": "/projects/spc.html"
 					},
-					"Wave Demo": {
+					{
+						"name": "Wave Demo",
 						"link": "/projects/wavedemo/index.html"
 					},
-					"Shadows and Lights": {
+					{
+						"name": "Shadows and Lights",
 						"link": "/projects/LD30/index.html"
 					},
-					"Minion Army": {
+					{
+						"name": "Minion Army",
 						"link": "/projects/LD33/view.html"
 					},
-					"Color Shape Stack": {
+					{
+						"name": "Color Shape Stack",
 						"link": "/projects/LD35/view.html"
 					},
-					"Camp Fire Simulator 2016": {
+					{
+						"name": "Camp Fire Simulator 2016",
 						"link": "/projects/LD36/view.html"
 					},
-					"Turtle Fork": {
+					{
+						"name": "Turtle Fork",
 						"link": "/projects/LD37/view.html"
 					},
-					"Planet Carbalsnahps 2": {
+					{
+						"name": "Planet Carbalsnahps 2",
 						"link": "/projects/LD38/view.html"
 					},
-					"Ludum Dare 42": {
+					{
+						"name": "Ludum Dare 42",
 						"link": "/projects/LD42/view.html"
 					}
-				}
+				]
 			},
-			"About": {
+			{
+				"name": "About",
 				"link": "/about.html"
 			}
-		}
+		]
 	},
 	"ignore-file": {
 		"exclude": [
