@@ -129,27 +129,6 @@ async function compileTemplate(pathname) {
 	return ejs.compile(data.toString());
 }
 
-async function formatPost(ejsData, postTemplatePath) {
-	var postTemplate = await compileTemplate(postTemplatePath);
-	return through2.obj(function(file, enc, callback) {
-		var parts = path.basename(file.path).split('-');
-		var date = parts[0] + '-' + parts[1] + '-' + parts[2];
-		
-		parts = splitFrontMatter(file.contents.toString(enc));
-		var data = Object.assign({ date, frontMatter: parts.frontMatter }, ejsData);
-		var content = ejs.render(markdown.toHTML(parts.body), data);
-		data.content = content;
-		
-		this.push(new Vinyl({
-			cwd: file.cwd,
-			base: file.base,
-			path: file.path,
-			contents: Buffer.from(postTemplate(data), enc)
-		}));
-		callback();
-	});
-}
-
 function splitFrontMatter(str) {
 	var beginIndex = str.indexOf('---');
 	var endIndex = str.indexOf('---', beginIndex + 1);
@@ -174,7 +153,28 @@ function splitFrontMatter(str) {
 	};
 }
 
-async function generatePaginates(ejsData) {
+async function formatPost(ejsData, postTemplatePath) {
+	var postTemplate = await compileTemplate(postTemplatePath);
+	return through2.obj(function(file, enc, callback) {
+		var parts = path.basename(file.path).split('-');
+		var date = parts[0] + '-' + parts[1] + '-' + parts[2];
+		
+		parts = splitFrontMatter(file.contents.toString(enc));
+		var data = Object.assign({ date, frontMatter: parts.frontMatter }, ejsData);
+		var content = ejs.render(markdown.toHTML(parts.body), data);
+		data.content = content;
+		
+		this.push(new Vinyl({
+			cwd: file.cwd,
+			base: file.base,
+			path: file.path,
+			contents: Buffer.from(postTemplate(data), enc)
+		}));
+		callback();
+	});
+}
+
+async function getPosts() {
 	var files = await globPromise('public/posts/**/*.html');
 	files.sort(function(a, b) {
 		var partsA = a.split('-');
@@ -190,35 +190,52 @@ async function generatePaginates(ejsData) {
 		throw('multi posts per day not allowed');
 	});
 	files.reverse(); //so its newest to oldest
-	
+	return files;
+}
+
+async function createPaginateType(template, path) {
+	return {
+		template: await compileTemplate(template),
+		path
+	};
+}
+
+function nextPage(template, i, numPaginates) {
+	if(i === numPaginates - 1) {
+		return null;
+	} else {
+		return template.path.replace('${i}').replace(i + 1);
+	}
+}
+
+async function writePaginate(template, data, i) {
+	var contents = template.template(data);
+	var pathname = path.join('public', template.path.replace('${i}', i));
+	await writeFile(pathname, contents);
+}
+
+async function generatePaginates(ejsData) {
+	var files = await getPosts();
 	await mkdirs('public/paginates');
-	var paginateTemplate = await compileTemplate('paginate.html');
-	var standalonePaginateTemplate = await compileTemplate('standalonePaginate.html');
-	var numPaginates = Math.ceil(files.length / POSTS_PER_PAGINATE);
-	for(var i = 0; i < numPaginates; i++) {
-		var nextPage;
-		if(i == numPaginates - 1) {
-			nextPage = 'null';
-			nextStandalonePage = 'null';
-		} else {
-			nextPage = `/paginates/paginate${i + 1}.html`;
-			nextStandalonePage = `/paginates/standalonePaginate${i + 1}.html`;
-		}
-		var posts = files.slice(i * numPaginates, (i + 1) * numPaginates);
+	
+	var embeddedTemplate = await createPaginateType('paginate.html', 
+			'/paginates/paginate${i}.html');
+	var standaloneTemplate = await createPaginateType('standalonePaginate.html', 
+			'/paginates/standalonePaginate${i}.html');
+	
+	var totalPages = Math.ceil(files.length / POSTS_PER_PAGINATE);
+	for(var i = 0; i < totalPages; i++) {
 		var data = Object.assign({
 			paginator: {
-				nextPage,
-				nextStandalonePage,
-				posts,
+				nextPage: nextPage(embeddedTemplate),
+				nextStandalonePage: nextPage(standaloneTemplate),
+				posts: files.slice(i * totalPages, (i + 1) * totalPages),
 				page: i,
-				totalPages: numPaginates
+				totalPages
 			}
 		}, ejsData);
-		var contents = paginateTemplate(data);
-		await writeFile(`public/paginates/paginate${i}.html`, contents);
-		
-		contents = standalonePaginateTemplate(data);
-		await writeFile(`public/paginates/standalonePaginate${i}.html`, contents);
+		await writePaginate(embeddedTemplate, data, i);
+		await writePaginate(standaloneTemplate, data, i);
 	}
 }
 
