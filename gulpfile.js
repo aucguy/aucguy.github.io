@@ -55,6 +55,39 @@ async function exists(pathname) {
 	});
 }
 
+async function mkdirs(pathname) {
+	if(!await exists(pathname)) {
+		await mkdirs(path.dirname(pathname));
+		await mkdir(pathname);
+	}
+}
+
+async function globFiles(globPattern, ignore) {
+	return await globPromise(globPattern, {
+		ignore
+	});
+}
+
+async function lastModified(files) {
+	var lastModified = 0;
+	for(var file of files) {
+		var stat = await lstat(file);
+		if(stat.mtimeMs > lastModified) {
+			lastModified = stat.mtimeMs;
+		}
+	}
+	return lastModified;
+}
+
+function contentHash(files) {
+	var hash = crypto.createHash('sha256');
+	for(var file of files) {
+		hash.update(file);
+		hash.update(',');
+	}
+	return hash.digest('hex');
+}
+
 async function readSite() {
 	var data = await readFile('config.json');
 	var site = JSON.parse(data.toString());
@@ -197,32 +230,6 @@ async function generatePaginates(ejsData) {
 	}
 }
 
-async function globFiles(globPattern, ignore) {
-	return await globPromise(globPattern, {
-		ignore
-	});
-}
-
-async function lastModified(files) {
-	var lastModified = 0;
-	for(var file of files) {
-		var stat = await lstat(file);
-		if(stat.mtimeMs > lastModified) {
-			lastModified = stat.mtimeMs;
-		}
-	}
-	return lastModified;
-}
-
-function contentHash(files) {
-	var hash = crypto.createHash('sha256');
-	for(var file of files) {
-		hash.update(file);
-		hash.update(',');
-	}
-	return hash.digest('hex');
-}
-
 async function createRepo(data, oldSiteData) {
 	var obj = {
 		repoDir: data.dir,
@@ -269,13 +276,6 @@ async function outputBuild(outputBuild, oldSiteData) {
 	return newSiteData;
 }
 
-async function mkdirs(pathname) {
-	if(!await exists(pathname)) {
-		await mkdirs(path.dirname(pathname));
-		await mkdir(pathname);
-	}
-}
-
 async function createTabElement(ejsData, info, tab, pathTemplate, contentTemplate) {
 	var pathname = pathTemplate.replace(':name', info.name).replace(':tab', tab.name);
 	pathname = path.join('public', pathname);
@@ -307,6 +307,17 @@ async function generateTabs(ejsData) {
 }
 
 async function build() {
+	var ejsData = await readSite();
+	var site = ejsData.site;
+	
+	var oldSiteData;
+	if(await exists('siteData.json')) {
+		oldSiteData = JSON.parse(await readFile('siteData.json'));
+	} else {
+		oldSiteData = {};
+	}
+	var newSiteData = {};
+	
 	await del('public/**/*');
 	
 	pump([
@@ -318,7 +329,6 @@ async function build() {
 	gulp.src(['src/**/*', '!**/*.js', '!**/*.html'])
 		.pipe(gulp.dest('public'));
 	
-	var ejsData = await readSite();
 	gulp.src('posts/**/*.md')
 		.pipe(await formatPost(ejsData, 'post.html'))
 		.pipe(extReplace('.html'))
@@ -333,15 +343,6 @@ async function build() {
 	
 	await generateTabs(ejsData);
 	
-	var oldSiteData;
-	if(await exists('siteData.json')) {
-		oldSiteData = JSON.parse(await readFile('siteData.json'));
-	} else {
-		oldSiteData = {};
-	}
-	
-	var site = ejsData.site;
-	var newSiteData = {};
 	if(site.outputBuild) {
 		newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
 	}
