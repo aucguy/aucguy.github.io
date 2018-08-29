@@ -13,9 +13,9 @@
 		<%- lib.includePage(post) %>
 	<% } %>
     
-	{% if paginator.next_page %}
+	<% if(paginator.nextStandalonePage !== 'null') { %>
 		<noscript>
-			<a id="nextPage" href="{{ paginator.next_htmlpage_path }}">Page {{ paginator.next_page }} of category {{ paginator.category }}.</a>
+			<a id="nextPage" href="<%- paginator.nextStandalonePage %>">Page <%- paginator.page + 2 %></a>
 		</noscript>
-	{% endif %}
+	<% } %>
 </div>

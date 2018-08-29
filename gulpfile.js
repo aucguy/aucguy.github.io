@@ -27,13 +27,17 @@ function readSite(callback) {
 		var site = JSON.parse(data.toString());
 		
 		var lib = {
-			includePage: function(file, args) {
-				var data = fs.readFileSync(file);
-				return ejs.render(data.toString(), {
-					lib,
-					args,
-					site
-				});
+			includePage: function(file, args, noPreprocess) {
+				var data = fs.readFileSync(file).toString();
+				if(noPreprocess) {
+					return data;
+				} else {
+					return ejs.render(data.toString(), {
+						lib,
+						args,
+						site
+					});
+				}
 			},
 			include: function(file, args) {
 				return lib.includePage(path.join('includes', file), args);
@@ -132,22 +136,32 @@ function generatePaginates(ejsData) {
 	
 	mkdirs('public/paginates');
 	var paginateTemplate = compileTemplate('paginate.html');
+	var standalonePaginateTemplate = compileTemplate('standalonePaginate.html');
 	var numPaginates = Math.ceil(files.length / POSTS_PER_PAGINATE);
 	for(var i = 0; i < numPaginates; i++) {
 		var nextPage;
 		if(i == numPaginates - 1) {
 			nextPage = 'null';
+			nextStandalonePage = 'null';
 		} else {
 			nextPage = `/paginates/paginate${i + 1}.html`;
+			nextStandalonePage = `/paginates/standalonePaginate${i + 1}.html`;
 		}
 		var posts = files.slice(i * numPaginates, (i + 1) * numPaginates);
-		var contents = paginateTemplate(Object.assign({
+		var data = Object.assign({
 			paginator: {
 				nextPage,
-				posts
+				nextStandalonePage,
+				posts,
+				page: i,
+				totalPages: numPaginates
 			}
-		}, ejsData));
+		}, ejsData);
+		var contents = paginateTemplate(data);
 		fs.writeFileSync(`public/paginates/paginate${i}.html`, contents);
+		
+		contents = standalonePaginateTemplate(data);
+		fs.writeFileSync(`public/paginates/standalonePaginate${i}.html`, contents);
 	}
 }
 
