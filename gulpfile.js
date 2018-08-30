@@ -17,7 +17,9 @@ const del = require('del');
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
 
-const POSTS_PER_PAGINATE = 3;
+const SITE_DATA_PATH = 'build/siteData.json';
+const POST_DATES_PATH = 'build/postDates.json';
+const POSTS_PATH = 'build/posts';
 
 function promisify(func) {
 	return function() {
@@ -77,6 +79,11 @@ async function lastModified(files) {
 		}
 	}
 	return lastModified;
+}
+
+async function writeFileMkdirs(pathname, contents) {
+	await mkdirs(path.dirname(pathname));
+	await writeFile(pathname, contents);
 }
 
 function contentHash(files) {
@@ -199,17 +206,14 @@ async function formatPost(ejsData, postTemplatePath) {
 		}));
 		callback();
 	}, function(callback) {
-		mkdirs('build/posts').then(() => {
-			return writeFile('build/postDates.json', JSON.stringify(postData));
-		}).then(callback);
+		writeFileMkdirs(POST_DATES_PATH, JSON.stringify(postData)).then(callback);
 	});
 }
 
 async function getPosts() {
-	var files = await globPromise('public/posts/**/*.html');
-	var postData = JSON.parse(await readFile('build/postDates.json'));
+	var files = await globPromise(path.join(POSTS_PATH, '**/*.html'));
+	var postData = JSON.parse(await readFile(POST_DATES_PATH));
 	files.sort(function(a, b) {
-		debugger;
 		var partsA = postData[path.basename(a, '.html')].split('-').map(Number);
 		var partsB = postData[path.basename(b, '.html')].split('-').map(Number);
 		for(var i = 0; i < 5; i++) {
@@ -260,7 +264,7 @@ async function generatePaginates(ejsData) {
 	var embeddedTemplate = await createPaginateType(config.embedded);
 	var standaloneTemplate = await createPaginateType(config.standalone);
 	
-	var totalPages = Math.ceil(files.length / POSTS_PER_PAGINATE);
+	var totalPages = Math.ceil(files.length / config.postsPerPage);
 	for(var i = 0; i < totalPages; i++) {
 		var data = Object.assign({
 			paginator: {
@@ -357,8 +361,8 @@ async function build() {
 	var site = ejsData.site;
 	
 	var oldSiteData;
-	if(await exists('siteData.json')) {
-		oldSiteData = JSON.parse(await readFile('siteData.json'));
+	if(await exists(SITE_DATA_PATH)) {
+		oldSiteData = JSON.parse(await readFile(SITE_DATA_PATH));
 	} else {
 		oldSiteData = {};
 	}
@@ -378,7 +382,7 @@ async function build() {
 	gulp.src('posts/**/*.md')
 		.pipe(await formatPost(ejsData, 'post.html'))
 		.pipe(extReplace('.html'))
-		.pipe(gulp.dest('public/posts'))
+		.pipe(gulp.dest(POSTS_PATH))
 		.on('end', async function() {
 			await generatePaginates(ejsData);
 			//pump silently swallows errors
@@ -392,7 +396,7 @@ async function build() {
 	if(site.outputBuild) {
 		newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
 	}
-	await writeFile('siteData.json', JSON.stringify(newSiteData));
+	await writeFileMkdirs(SITE_DATA_PATH, JSON.stringify(newSiteData));
 	console.log('finished build');
 }
 
