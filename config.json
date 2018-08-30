@@ -1,9 +1,13 @@
 {
-	"custom_paginate": {
-		"main": {
-			"posts_per_page": 3,
-			"path": "paginates/main:num.html",
-			"html_path": "htmlPaginates/main:num.html"
+	"paginate": {
+		"postsPerPage": 3,
+		"embedded": {
+			"output": "paginates/paginate${i}.html",
+			"template": "paginate.html"
+		},
+		"standalone": {
+			"output": "paginates/standalonePaginate${i}.html",
+			"template": "standalonePaginate.html"
 		}
 	},
 	"tabs": {

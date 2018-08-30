@@ -228,10 +228,10 @@ async function getPosts() {
 	return files;
 }
 
-async function createPaginateType(template, path) {
+async function createPaginateType(config) {
 	return {
-		template: await compileTemplate(template),
-		path
+		template: await compileTemplate(config.template),
+		path: config.output
 	};
 }
 
@@ -250,13 +250,15 @@ async function writePaginate(template, data, i) {
 }
 
 async function generatePaginates(ejsData) {
+	var config = ejsData.site.paginate;
+	if(!config) {
+		throw(new Error('paginate config not found'));
+	}
 	var files = await getPosts();
 	await mkdirs('public/paginates');
 	
-	var embeddedTemplate = await createPaginateType('paginate.html', 
-			'/paginates/paginate${i}.html');
-	var standaloneTemplate = await createPaginateType('standalonePaginate.html', 
-			'/paginates/standalonePaginate${i}.html');
+	var embeddedTemplate = await createPaginateType(config.embedded);
+	var standaloneTemplate = await createPaginateType(config.standalone);
 	
 	var totalPages = Math.ceil(files.length / POSTS_PER_PAGINATE);
 	for(var i = 0; i < totalPages; i++) {
