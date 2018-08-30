@@ -1,6 +1,7 @@
 ---
 title: Now using Google Analytics
 category: main
+date: 2015-2-15
 ---
 I was wondering how many people visited my site so I added Google Analytics.
 If you feel like yelling at me (and all other websites that use Google Analytics),

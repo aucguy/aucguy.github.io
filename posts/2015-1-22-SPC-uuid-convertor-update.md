@@ -1,6 +1,7 @@
 ---
 title: SPC Uuid convertor update
 category: main
+date: 2015-1-22
 ---
 There is a new update for SPC. You can get it here [here](/projects/spc.html). If you're running a server it is suggested you install this before February 4, 2015 (date of allowing usernames to be changed). This update makes SPC store player settings by uuid (constant regardless of username changing)'s instead of usernames. It used to be that usernames were constant, but once Mojang decided [usernames might change](https://mojang.com/2015/01/announcing-minecraft-name-changes/), uuids were added instead as a unique way to determine players. This is important because with old versions of SPC if you changed your username then you wouldn't be able to access your old settings. For example, if your username was 'foo' then SPC would save your settings in a file named 'foo.properties.' But if you changed your username to 'bar' then SPC would expect your settings to be saved as 'bar.properties' But that wouldn't exist! So all your settings would be lost. Instead, if SPC referenced players by their uuids then this problem wouldn't occur as uuids are constant. When your username name was 'foo' your settings would be saved in a file named after your uuid. When you changed to 'bar' then your settings would be found since your uuid didn't change. Basically, just get the update.
 

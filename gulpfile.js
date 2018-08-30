@@ -88,6 +88,30 @@ function contentHash(files) {
 	return hash.digest('hex');
 }
 
+function strToTime(str) {
+	var parts = str.split('-');
+	if(parts.length !== 3 && parts.length !== 5) {
+		throw(new Error('invalid date'));
+	}
+	return {
+		year: parts[0],
+		month: parts[1],
+		day: parts[2],
+		hour: parts[3],
+		minute: parts[4]
+	};
+}
+
+function timeToStr(time) {
+	var str = `${MONTHS[time.month - 1]} ${time.day}, ${time.year}`;
+	if(time.hour && time.minute) {
+		var pm = time.hour > 12;
+		var hour = pm ? time.hour - 12 : time.hour;
+		str = `${str} ${hour}:${time.minute} ${pm ? 'PM' : 'AM'}`;
+	}
+	return str;
+}
+
 async function readSite() {
 	var data = await readFile('config.json');
 	var site = JSON.parse(data.toString());
@@ -109,8 +133,7 @@ async function readSite() {
 			return lib.includePage(path.join('includes', file), args);
 		},
 		date: function(date) {
-			var parts = date.split('-');
-			return MONTHS[parseInt(parts[1]) - 1] + ' ' + parts[2] + ', ' + parts[0];
+			return timeToStr(strToTime(date));
 		},
 		markdown: function(content) {
 			return markdown.toHTML(content);
@@ -155,14 +178,18 @@ function splitFrontMatter(str) {
 
 async function formatPost(ejsData, postTemplatePath) {
 	var postTemplate = await compileTemplate(postTemplatePath);
+	var postData = {};
 	return through2.obj(function(file, enc, callback) {
-		var parts = path.basename(file.path).split('-');
-		var date = parts[0] + '-' + parts[1] + '-' + parts[2];
-		
-		parts = splitFrontMatter(file.contents.toString(enc));
-		var data = Object.assign({ date, frontMatter: parts.frontMatter }, ejsData);
+		var parts = splitFrontMatter(file.contents.toString(enc));
+		var data = Object.assign({ frontMatter: parts.frontMatter }, ejsData);
 		var content = ejs.render(markdown.toHTML(parts.body), data);
 		data.content = content;
+		
+		var key = path.relative(file.base, file.path).replace(/[.]md$/, '');
+		if(key in postData) {
+			throw(new Error(`duplicate post name: ${key}`));
+		}
+		postData[key] = parts.frontMatter.date;
 		
 		this.push(new Vinyl({
 			cwd: file.cwd,
@@ -171,23 +198,31 @@ async function formatPost(ejsData, postTemplatePath) {
 			contents: Buffer.from(postTemplate(data), enc)
 		}));
 		callback();
+	}, function(callback) {
+		mkdirs('build/posts').then(() => {
+			return writeFile('build/postDates.json', JSON.stringify(postData));
+		}).then(callback);
 	});
 }
 
 async function getPosts() {
 	var files = await globPromise('public/posts/**/*.html');
+	var postData = JSON.parse(await readFile('build/postDates.json'));
 	files.sort(function(a, b) {
-		var partsA = a.split('-');
-		var partsB = b.split('-');
-		for(var i = 0; i < 3; i++) {
+		debugger;
+		var partsA = postData[path.basename(a, '.html')].split('-').map(Number);
+		var partsB = postData[path.basename(b, '.html')].split('-').map(Number);
+		for(var i = 0; i < 5; i++) {
+			if(partsA[i] === undefined || partsB[i] === undefined) {
+				break;
+			}
 			if(partsA[i] < partsB[i]) {
 				return -1;
 			} else if(partsA[i] > partsB[i]) {
 				return 1;
 			}
 		}
-		//TODO remove this restriction
-		throw('multi posts per day not allowed');
+		throw(`ambigious time order for ${a} and ${b}`);
 	});
 	files.reverse(); //so its newest to oldest
 	return files;
@@ -200,11 +235,11 @@ async function createPaginateType(template, path) {
 	};
 }
 
-function nextPage(template, i, numPaginates) {
-	if(i === numPaginates - 1) {
-		return null;
+function nextPage(template, i, totalPages) {
+	if(i === totalPages - 1) {
+		return 'null';
 	} else {
-		return template.path.replace('${i}').replace(i + 1);
+		return template.path.replace('${i}', i + 1);
 	}
 }
 
@@ -227,8 +262,8 @@ async function generatePaginates(ejsData) {
 	for(var i = 0; i < totalPages; i++) {
 		var data = Object.assign({
 			paginator: {
-				nextPage: nextPage(embeddedTemplate),
-				nextStandalonePage: nextPage(standaloneTemplate),
+				nextPage: nextPage(embeddedTemplate, i, totalPages),
+				nextStandalonePage: nextPage(standaloneTemplate, i, totalPages),
 				posts: files.slice(i * totalPages, (i + 1) * totalPages),
 				page: i,
 				totalPages
