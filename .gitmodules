@@ -15,4 +15,4 @@
 	url = https://github.com/aucguy/Ludum-Dare-38
 [submodule "repos/Ludum-Dare-42"]
 	path = repos/Ludum-Dare-42
-	url = https://github.com/aucguy/Ludum-Dare-42
+	url = https://github.com/aucguy/Ludum-Dare-42.git
