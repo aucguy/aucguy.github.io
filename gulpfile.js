@@ -87,6 +87,14 @@ function svgoPromise(contents, config) {
 	});
 }
 
+function gulpPromise(stream) {
+	return new Promise((resolve, reject) => {
+		stream.on('end', () => {
+			resolve();
+		});
+	});
+}
+
 async function lastModified(files) {
 	var lastModified = 0;
 	for(var file of files) {
@@ -391,6 +399,7 @@ function needsRebuild(repo, modified, hash) {
 
 async function outputBuild(outputBuild, oldSiteData) {
 	var newSiteData = {};
+	var promises = [];
 	for(var repoData of outputBuild) {
 		var repo = await createRepo(repoData, oldSiteData);
 		var modified = await lastModified(repo.files);
@@ -409,10 +418,11 @@ async function outputBuild(outputBuild, oldSiteData) {
 			lastModified: modified,
 			contentHash: hash
 		};
-		gulp.src(repo.buildDir)
+		promises.push(gulpPromise(gulp.src(repo.buildDir)
 			.pipe(gulpPress(repo.svgoConfig))
-			.pipe(gulp.dest(path.join('public', repo.outputDir)));
+			.pipe(gulp.dest(path.join('public', repo.outputDir)))));
 	}
+	await Promise.all(promises);
 	return newSiteData;
 }
 
@@ -470,7 +480,6 @@ async function build() {
 		.pipe(gulp.dest(POSTS_PATH))
 		.on('end', async function() {
 			await generatePaginates(ejsData);
-			//pump silently swallows errors
 			gulp.src('src/**/*.html')
 				.pipe(gulp_ejs(ejsData))
 				.pipe(gulpPress())
