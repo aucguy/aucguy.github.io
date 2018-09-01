@@ -3,7 +3,6 @@ const path = require('path');
 const child_process = require('child_process');
 const crypto = require('crypto');
 const gulp = require('gulp');
-const pump = require('pump');
 const uglify = require('uglify-js');
 const gulp_uglify = require('gulp-uglify');
 const extReplace = require('gulp-ext-replace');
