@@ -380,7 +380,9 @@ async function createRepo(data, oldSiteData) {
 		repoDir: data.dir,
 		repoDirGlob: path.join(data.dir, '**/*'),
 		buildDir: path.join(data.dir, data.build, '**/*'),
-		outputDir: path.join(data.output),
+		outputDir: path.join('public', data.output),
+		cacheDir: path.join('build/repoCache', data.dir),
+		cacheDirGlob: path.join('build/repoCache', data.dir, '**/*'),
 		cmd: data.cmd,
 		svgoConfig: data.svgo,
 		lastModified: oldSiteData[data.dir] ? oldSiteData[data.dir].lastModified : -1,
@@ -410,6 +412,9 @@ async function outputBuild(outputBuild, oldSiteData) {
 			await exec(repo.cmd, {
 				cwd: repo.repoDir
 			});
+			await gulp.src(repo.buildDir)
+					.pipe(gulpPress(repo.svgoConfig))
+					.pipe(gulp.dest(repo.cacheDir));
 			var files = await globFiles(repo.repoDirGlob, repo.excludes);
 			modified = await lastModified(files);
 			hash = contentHash(files);
@@ -418,9 +423,8 @@ async function outputBuild(outputBuild, oldSiteData) {
 			lastModified: modified,
 			contentHash: hash
 		};
-		promises.push(gulpPromise(gulp.src(repo.buildDir)
-			.pipe(gulpPress(repo.svgoConfig))
-			.pipe(gulp.dest(path.join('public', repo.outputDir)))));
+		promises.push(gulpPromise(gulp.src(repo.cacheDirGlob)
+			.pipe(gulp.dest(repo.outputDir))));
 	}
 	await Promise.all(promises);
 	return newSiteData;
