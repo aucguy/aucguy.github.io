@@ -489,5 +489,6 @@ async function build() {
 gulp.task('build', () => {
 	build().catch((err) => {
 		throw(err);
+		process.exit(1); //not the best solution
 	});
 });
