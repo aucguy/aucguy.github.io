@@ -4,7 +4,8 @@ const child_process = require('child_process');
 const crypto = require('crypto');
 const gulp = require('gulp');
 const pump = require('pump');
-const uglify = require('gulp-uglify');
+const uglify = require('uglify-js');
+const gulp_uglify = require('gulp-uglify');
 const extReplace = require('gulp-ext-replace');
 const gulp_ejs = require('gulp-ejs');
 const ejs = require('ejs');
@@ -13,6 +14,9 @@ const through2 = require('through2');
 const Vinyl = require('vinyl');
 const glob = require('glob');
 const del = require('del');
+const htmlMinify = require('html-minifier').minify;
+const svgo = require('svgo');
+const babel = require('@babel/core');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
@@ -20,6 +24,8 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 const SITE_DATA_PATH = 'build/siteData.json';
 const POST_DATES_PATH = 'build/postDates.json';
 const POSTS_PATH = 'build/posts';
+
+const COMPRESSED_FILES = ['.js', '.html', '.svg'];
 
 function promisify(func) {
 	return function() {
@@ -70,6 +76,18 @@ async function globFiles(globPattern, ignore) {
 	});
 }
 
+function svgoPromise(contents, config) {
+	return new Promise((resolve, reject) => {
+		new svgo(config).optimize(contents, (result) => {
+			if(result.error) {
+				reject(result.error);
+			} else {
+				resolve(result.data);
+			}
+		});
+	});
+}
+
 async function lastModified(files) {
 	var lastModified = 0;
 	for(var file of files) {
@@ -84,6 +102,71 @@ async function lastModified(files) {
 async function writeFileMkdirs(pathname, contents) {
 	await mkdirs(path.dirname(pathname));
 	await writeFile(pathname, contents);
+}
+
+async function press(pathname, contents, svgoConfig) {
+	var ext = path.extname(pathname);
+	if(ext === '.js') {
+		contents = (await babel.transformAsync(contents, {
+			plugins: ['@babel/plugin-transform-block-scoping']
+		})).code;
+		result = uglify.minify(contents);
+		if(result.error) {
+			console.error(`uglify: error ${pathname}`)
+			throw(result.error);
+		} else if(result.warnings) {
+			console.log(`uglify: warnings for ${pathname}`);
+			result.warnings.foreach(console.log);
+		}
+		contents = result.code;
+	} else if(ext === '.html') {
+		contents = htmlMinify(contents, {
+			collapseBooleanAttributes: true,
+			collapseInlineTagWhitespace: true,
+			collapseWhitespace: true,
+			conservativeCollapse: true,
+			decodeEntities: true,
+			minifyCSS: true,
+			minifyJS: true,
+			removeComments: true,
+			removeRedundantAttributes: true,
+			removeScriptTypeAttributes: true,
+			removeStyleLinkTypeAttributes: true,
+		});
+	} else if(ext === '.svg') {
+		svgoConfig = svgoConfig || {};
+		if(!svgoConfig.disabled) {
+			contents = await svgoPromise(contents, svgoConfig);
+		}
+	}
+	return contents;
+}
+
+function gulpPress(svgoConfig) {
+	return through2.obj(function(file, enc, callback) {
+		if(file.isDirectory()) {
+			this.push(file);
+			callback();
+		} else if(COMPRESSED_FILES.includes(path.extname(file.path))) {
+			press(file.path, file.contents.toString(enc), svgoConfig)
+			  		.then(contents => {
+				this.push(new Vinyl({
+					cwd: file.cwd,
+					base: file.base,
+					path: file.path,
+					contents: Buffer.from(contents, enc)
+				}));
+				callback();
+			});
+		} else {
+			this.push(file);
+			callback();
+		}
+	});
+}
+
+async function writeFilePress(pathname, contents) {
+	await writeFile(pathname, await press(pathname, contents));
 }
 
 function contentHash(files) {
@@ -232,10 +315,11 @@ async function getPosts() {
 	return files;
 }
 
-async function createPaginateType(config) {
+async function createPaginateType(config, standalone) {
 	return {
 		template: await compileTemplate(config.template),
-		path: config.output
+		path: config.output,
+		standalone
 	};
 }
 
@@ -250,7 +334,11 @@ function nextPage(template, i, totalPages) {
 async function writePaginate(template, data, i) {
 	var contents = template.template(data);
 	var pathname = path.join('public', template.path.replace('${i}', i));
-	await writeFile(pathname, contents);
+	if(template.standalone) {
+		await writeFilePress(pathname, contents);
+	} else {
+		await writeFile(pathname, contents);
+	}
 }
 
 async function generatePaginates(ejsData) {
@@ -261,8 +349,8 @@ async function generatePaginates(ejsData) {
 	var files = await getPosts();
 	await mkdirs('public/paginates');
 	
-	var embeddedTemplate = await createPaginateType(config.embedded);
-	var standaloneTemplate = await createPaginateType(config.standalone);
+	var embeddedTemplate = await createPaginateType(config.embedded, false);
+	var standaloneTemplate = await createPaginateType(config.standalone, true);
 	
 	var totalPages = Math.ceil(files.length / config.postsPerPage);
 	for(var i = 0; i < totalPages; i++) {
@@ -287,6 +375,7 @@ async function createRepo(data, oldSiteData) {
 		buildDir: path.join(data.dir, data.build, '**/*'),
 		outputDir: path.join(data.output),
 		cmd: data.cmd,
+		svgoConfig: data.svgo,
 		lastModified: oldSiteData[data.dir] ? oldSiteData[data.dir].lastModified : -1,
 		contentHash: oldSiteData[data.dir] ? oldSiteData[data.dir].contentHash : null,
 		excludes: null,
@@ -321,7 +410,9 @@ async function outputBuild(outputBuild, oldSiteData) {
 			lastModified: modified,
 			contentHash: hash
 		};
-		gulp.src(repo.buildDir).pipe(gulp.dest(path.join('public', repo.outputDir)));
+		gulp.src(repo.buildDir)
+			.pipe(gulpPress(repo.svgoConfig))
+			.pipe(gulp.dest(path.join('public', repo.outputDir)));
 	}
 	return newSiteData;
 }
@@ -332,7 +423,7 @@ async function createTabElement(ejsData, info, tab, pathTemplate, contentTemplat
 	
 	var data = Object.assign({ tab: info }, ejsData);
 	await mkdirs(path.dirname(pathname));
-	await writeFile(pathname, contentTemplate(data));
+	await writeFilePress(pathname, contentTemplate(data));
 }
 
 async function generateTabs(ejsData) {
@@ -370,14 +461,9 @@ async function build() {
 	
 	await del('public/**/*');
 	
-	pump([
-		gulp.src('src/**/*.js'),
-		uglify(),
-		gulp.dest('public')
-	]);
-	
-	gulp.src(['src/**/*', '!**/*.js', '!**/*.html'])
-		.pipe(gulp.dest('public'));
+	gulp.src(['src/**/*', '!src/**/*.html'])
+		.pipe(gulpPress())
+		.pipe(gulp.dest('public'))
 	
 	gulp.src('posts/**/*.md')
 		.pipe(await formatPost(ejsData, 'post.html'))
@@ -388,6 +474,7 @@ async function build() {
 			//pump silently swallows errors
 			gulp.src('src/**/*.html')
 				.pipe(gulp_ejs(ejsData))
+				.pipe(gulpPress())
 				.pipe(gulp.dest('public'));
 		});
 	

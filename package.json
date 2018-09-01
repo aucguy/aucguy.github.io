@@ -4,6 +4,8 @@
   "description": "Aucguy's website",
   "main": "none",
   "dependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-transform-block-scoping": "^7.0.0",
     "del": "^3.0.0",
     "ejs": "^2.6.1",
     "glob": "^7.1.2",
@@ -12,11 +14,13 @@
     "gulp-ext-replace": "^0.3.0",
     "gulp-markdown": "^3.0.0",
     "gulp-uglify": "^3.0.1",
+    "html-minifier": "^3.5.20",
     "http-serve": "^1.0.1",
     "markdown": "^0.5.0",
     "pump": "^3.0.0",
     "svgo": "^0.7.2",
     "through2": "^2.0.3",
+    "uglify-js": "^3.4.8",
     "vinyl": "^2.2.0"
   },
   "devDependencies": {},
