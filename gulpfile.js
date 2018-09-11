@@ -332,7 +332,7 @@ async function createPaginateType(config, standalone) {
 
 function nextPage(template, i, totalPages) {
 	if(i === totalPages - 1) {
-		return 'null';
+		return null;
 	} else {
 		return template.path.replace('${i}', i + 1);
 	}

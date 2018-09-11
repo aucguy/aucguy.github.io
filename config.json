@@ -2,11 +2,11 @@
 	"paginate": {
 		"postsPerPage": 3,
 		"embedded": {
-			"output": "paginates/paginate${i}.html",
+			"output": "/paginates/paginate${i}.html",
 			"template": "paginate.html"
 		},
 		"standalone": {
-			"output": "paginates/standalonePaginate${i}.html",
+			"output": "/paginates/standalonePaginate${i}.html",
 			"template": "standalonePaginate.html"
 		}
 	},

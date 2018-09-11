@@ -13,7 +13,7 @@
 		<%- lib.includePage(post) %>
 	<% } %>
     
-	<% if(paginator.nextStandalonePage !== 'null') { %>
+	<% if(paginator.nextStandalonePage) { %>
 		<noscript>
 			<a id="nextPage" href="<%- paginator.nextStandalonePage %>">Page <%- paginator.page + 2 %></a>
 		</noscript>
