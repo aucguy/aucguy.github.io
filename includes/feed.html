@@ -10,12 +10,4 @@
 	<p></p>
 <% } %>
 
-<%# custom scripts %>
-<% var scripts = function(__append) { %>
-	<% if(args.scripts) { %>
-		<% args.scripts(__append) %>
-	<% } %>
-	<script src="scripts/posts.js"></script>
-<% } %>
-
-<%- lib.include('theme/theme.html', { title: args.title, midsection, scripts }) %>
+<%- lib.include('theme/theme.html', { title: args.title, midsection }) %>
