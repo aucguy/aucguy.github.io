@@ -1,0 +1,70 @@
+#content
+{
+	background: white;
+	position: absolute;
+	border: 5px groove gray;
+	left: 10%;
+	width: 80%
+}
+
+#tabs
+{
+	position:relative;
+	left:7%;
+	z-index:3
+}
+
+.tabList
+{
+	display: none;
+	position: absolute
+}
+
+.loadButtonDiv
+{
+	display: none;
+	position: relative;
+	left: 10%;
+	margin: 5px
+}
+
+.postMain
+{
+	position:relative;
+	left:3%;
+	width:95%;
+	border:3px solid gray
+}
+
+.postDiv
+{
+	line-height: 1%
+}
+
+.postTitle
+{
+	text-indent: 1%
+}
+
+.postDate
+{
+	text-indent: 5%
+}
+
+.postContent
+{
+	text-indent: 3%
+}
+
+.standalone
+{
+	position:relative;
+	left:2%
+}
+
+.wavedemo
+{
+	border:none;
+	width:100%;
+	height:530px
+}

@@ -3,7 +3,7 @@
 	<a href="<%- args.link %>">
 		<img src="/assets/tabs/tab-<%- args.name %>.svg"></img>
 	</a>
-	<table id="tabList-<%- args.name %>" style="display:none;position:absolute">
+	<table id="tabList-<%- args.name %>" class="tabList">
 		<% if(args.items) { %>
 			<% for(var item of args.items) { %>
 				<%- lib.include('theme/listitem.html', Object.assign({ tabname: args.name}, item)) %>
