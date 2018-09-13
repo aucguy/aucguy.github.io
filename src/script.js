@@ -36,10 +36,15 @@
 	var parser = new DOMParser();
 	var totalPages = null;
 	var nextPage = 1;
+	
+	function setLoadButtonStyle(style) {
+		document.getElementById('loadButton').style.display = style;
+	}
 
 	window.posts = {
 		loadPosts: function() {
 			if(totalPages === null || nextPage >= totalPages) {
+				setLoadButtonStyle('none');
 				return;
 			}
 			
@@ -55,6 +60,10 @@
 					div.appendChild(child);
 				}
 			});
+			
+			if(nextPage >= totalPages) {
+				setLoadButtonStyle('none');
+			}
 		}
 	};
 	
@@ -96,6 +105,8 @@
 				break;
 			}
 		}
-		document.getElementById('loadButton').style.display = 'inline';
+		if(totalPages !== null) {
+			setLoadButtonStyle('inline');
+		}
 	});
 })();
