@@ -10,4 +10,8 @@
 	<p></p>
 <% } %>
 
-<%- lib.include('theme/theme.html', { title: args.title, midsection }) %>
+<% function head(__append) { %>
+	<meta property="self:totalPages" content="<%- lib.readConfig('build/paginate.json').totalPages%>">
+<% } %>
+
+<%- lib.include('theme/theme.html', { title: args.title, midsection, head }) %>

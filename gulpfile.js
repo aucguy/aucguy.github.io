@@ -234,6 +234,9 @@ async function readSite() {
 		},
 		markdown: function(content) {
 			return markdown.toHTML(content);
+		},
+		readConfig: function(file) {
+			return JSON.parse(fs.readFileSync(file).toString());
 		}
 	}
 	
@@ -373,6 +376,9 @@ async function generatePaginates(ejsData) {
 		await writePaginate(embeddedTemplate, data, i);
 		await writePaginate(standaloneTemplate, data, i);
 	}
+	await writeFile('build/paginate.json', JSON.stringify({
+		totalPages
+	}));
 }
 
 async function createRepo(data, oldSiteData) {
@@ -474,7 +480,12 @@ async function build() {
 	
 	await del('public/**/*');
 	
-	gulp.src(['src/**/*', '!src/**/*.html'])
+	gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js'])
+		.pipe(gulpPress())
+		.pipe(gulp.dest('public'))
+		
+	gulp.src('src/script.js')
+		.pipe(gulp_ejs(ejsData))
 		.pipe(gulpPress())
 		.pipe(gulp.dest('public'))
 	

@@ -1,14 +1,4 @@
-<div>	
-	<div id="indexData" style="display:none">
-		{
-			<% if(paginator.nextPage) { %>
-				"nextPage": "<%- paginator.nextPage %>"
-			<% } else { %>
-				"nextPage": "null"
-			<% } %>
-		}
-	</div>
-	
+<div>
 	<% for(var post of paginator.posts) { %>
 		<%- lib.includePage(post) %>
 	<% } %>

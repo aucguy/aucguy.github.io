@@ -1,4 +1,12 @@
 (function() {
+	function safeParseInt(x) {
+		try {
+			return parseInt(x);
+		} catch(e) {
+			return null;
+		}
+	}
+	
 	function ajax(path, onready, onfail) {
 		onready = onready || function() {};
 		onfail = onfail || function(request) {
@@ -24,21 +32,23 @@
 		request.send();
 	}
 	
-	var nextPage = null;
+	var pathTemplate = "<%- lib.readConfig('config.json').paginate.embedded.output %>";
 	var parser = new DOMParser();
+	var totalPages = null;
+	var nextPage = 1;
 
 	window.posts = {
 		loadPosts: function() {
-			if(nextPage === null) {
+			if(totalPages === null || nextPage >= totalPages) {
 				return;
 			}
 			
 			var div = document.createElement('div');
 			document.getElementById('posts').appendChild(div);
 			
-			ajax(nextPage, function(response) {
+			var path = pathTemplate.replace('${i}', nextPage++);
+			ajax(path, function(response) {
 				var dom = parser.parseFromString(response.responseText, 'text/html');
-				setNextPage(dom);
 				while(dom.body.childNodes.length !== 0) {
 					var child = dom.body.childNodes[0];
 					dom.body.removeChild(child);
@@ -64,11 +74,6 @@
 		}
 	}
 	
-	document.addEventListener("DOMContentLoaded", function() {
-		setNextPage(document);
-		document.getElementById('loadButton').style.display = 'inline';
-	});
-	
 	function getTabList(name) {
 		return document.getElementById("tabList-" + name);
 	};
@@ -81,4 +86,16 @@
 			getTabList(name).style.display = "none";
 		}
 	}
+	
+	document.addEventListener("DOMContentLoaded", function() {
+		var elems = document.getElementsByTagName('meta');
+		for(var i=0; i<elems.length; i++) {
+			var elem = elems[i];
+			if(elem.getAttribute('property') === 'self:totalPages') {
+				totalPages = safeParseInt(elem.getAttribute('content'));
+				break;
+			}
+		}
+		document.getElementById('loadButton').style.display = 'inline';
+	});
 })();

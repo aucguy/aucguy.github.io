@@ -5,10 +5,6 @@
 	<title>
 		<%- args.title %>
 	</title>
-	<%- lib.include('js_utils.html') %>
-	<script>
-  	<%# per-page scripts %> 
-	</script>
 	<script src="/script.js"></script>
 	
 	<style>
@@ -27,6 +23,9 @@
 		z-index:3
 	}
 	</style>
+	<% if(args.head) { %>
+		<%- args.head(__append) %>
+	<% } %>
 </head>
 <body background="/assets/background.svg">
 	<div id="content">
