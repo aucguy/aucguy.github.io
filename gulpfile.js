@@ -344,11 +344,7 @@ function nextPage(template, i, totalPages) {
 async function writePaginate(template, data, i) {
 	var contents = template.template(data);
 	var pathname = path.join('public', template.path.replace('${i}', i));
-	if(template.standalone) {
-		await writeFilePress(pathname, contents);
-	} else {
-		await writeFile(pathname, contents);
-	}
+	await writeFilePress(pathname, contents);
 }
 
 async function generatePaginates(ejsData) {
