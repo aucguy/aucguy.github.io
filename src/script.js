@@ -38,32 +38,30 @@
 	var nextPage = 1;
 	
 	function setLoadButtonStyle(style) {
-		document.getElementById('loadButton').style.display = style;
+		document.getElementById('loadButtonDiv').style.display = style;
 	}
-
-	window.posts = {
-		loadPosts: function() {
-			if(totalPages === null || nextPage >= totalPages) {
-				setLoadButtonStyle('none');
-				return;
+	
+	function loadPosts() {
+		if(totalPages === null || nextPage >= totalPages) {
+			setLoadButtonStyle('none');
+			return;
+		}
+		
+		var div = document.createElement('div');
+		document.getElementById('posts').appendChild(div);
+		
+		var path = pathTemplate.replace('${i}', nextPage++);
+		ajax(path, function(response) {
+			var dom = parser.parseFromString(response.responseText, 'text/html');
+			while(dom.body.childNodes.length !== 0) {
+				var child = dom.body.childNodes[0];
+				dom.body.removeChild(child);
+				div.appendChild(child);
 			}
-			
-			var div = document.createElement('div');
-			document.getElementById('posts').appendChild(div);
-			
-			var path = pathTemplate.replace('${i}', nextPage++);
-			ajax(path, function(response) {
-				var dom = parser.parseFromString(response.responseText, 'text/html');
-				while(dom.body.childNodes.length !== 0) {
-					var child = dom.body.childNodes[0];
-					dom.body.removeChild(child);
-					div.appendChild(child);
-				}
-			});
-			
-			if(nextPage >= totalPages) {
-				setLoadButtonStyle('none');
-			}
+		});
+		
+		if(nextPage >= totalPages) {
+			setLoadButtonStyle('none');
 		}
 	};
 	
@@ -83,20 +81,30 @@
 		}
 	}
 	
-	function getTabList(name) {
-		return document.getElementById("tabList-" + name);
-	};
 	
-	window.tabs = {
-		showTabList: function(name) {
-			getTabList(name).style.display = "block";
-		},
-		hideTabList: function(name) {
-			getTabList(name).style.display = "none";
-		}
+	function showTabList(tablist) {
+		tablist.style.display = "block";
+	}
+	
+	function hideTabList(tablist) {
+		tablist.style.display = "none";
 	}
 	
 	document.addEventListener("DOMContentLoaded", function() {
+		var loadButton = document.getElementById('loadButton');
+		if(loadButton !== null) {
+			loadButton.addEventListener('click', loadPosts);
+		}
+		var tabsrow = document.getElementById('tabsrow');
+		if(tabsrow !== null) {
+			for(var i=0; i<tabsrow.children.length; i++) {
+				var tab = tabsrow.children[i];
+				var tablist = document.getElementById('tabList-' + tab.id.replace('tab-', ''));
+				tab.addEventListener('mouseover', showTabList.bind(null, tablist));
+				tab.addEventListener('mouseout', hideTabList.bind(null, tablist));
+			}
+		}
+		
 		var elems = document.getElementsByTagName('meta');
 		for(var i=0; i<elems.length; i++) {
 			var elem = elems[i];
