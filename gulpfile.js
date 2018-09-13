@@ -16,6 +16,7 @@ const del = require('del');
 const htmlMinify = require('html-minifier').minify;
 const svgo = require('svgo');
 const babel = require('@babel/core');
+const uglifycss = require('uglifycss');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
@@ -24,7 +25,7 @@ const SITE_DATA_PATH = 'build/siteData.json';
 const POST_DATES_PATH = 'build/postDates.json';
 const POSTS_PATH = 'build/posts';
 
-const COMPRESSED_FILES = ['.js', '.html', '.svg'];
+const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
 
 function promisify(func) {
 	return function() {
@@ -145,6 +146,8 @@ async function press(pathname, contents, svgoConfig) {
 		if(!svgoConfig.disabled) {
 			contents = await svgoPromise(contents, svgoConfig);
 		}
+	} else if(ext === '.css') {
+		return uglifycss.processString(contents, {});
 	}
 	return contents;
 }

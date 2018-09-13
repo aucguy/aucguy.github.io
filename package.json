@@ -20,6 +20,7 @@
     "svgo": "^0.7.2",
     "through2": "^2.0.3",
     "uglify-js": "^3.4.8",
+    "uglifycss": "0.0.29",
     "vinyl": "^2.2.0"
   },
   "devDependencies": {},
