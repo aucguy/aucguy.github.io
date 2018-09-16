@@ -26,8 +26,8 @@
 					<a href="<%- args.link %>">
 						<%- tab.name %>
 					</a>
-					<div class="tabList" id="tabList-<%- tab.name %>">
-						<% if(tab.items) { %>
+					<% if(tab.items) { %>
+						<div class="tabList" id="tabList-<%- tab.name %>">		
 							<% for(var item of tab.items) { %>
 								<a href="<%- item.link %>">
 									<div class="listItem">
@@ -35,8 +35,8 @@
 									</div>
 								</a>
 							<% } %>
-						<% } %>
-					</div>
+						</div>
+					<% } %>
 				</div>
 			<% } %>
 		</div>

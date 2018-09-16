@@ -123,8 +123,10 @@ a:active
 }
 
 <% for(var tab of site.tabs.items) { %>
-	#tab-<%- tab.name %>:hover #tabList-<%- tab.name %>
-	{
-		display: block
-	}
+	<% if(tab.items) { %>
+		#tab-<%- tab.name %>:hover #tabList-<%- tab.name %>
+		{
+			display: block
+		}
+	<% } %>
 <% } %>
