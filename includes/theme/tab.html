@@ -1,13 +1,13 @@
 <%# template for a tab at the top of the page %>
-<td id="tab-<%- args.name %>">
+<div class="tab" id="tab-<%- args.name %>">
 	<a href="<%- args.link %>">
-		<img src="/assets/tabs/tab-<%- args.name %>.svg"></img>
+		<%- args.name %>
 	</a>
-	<table id="tabList-<%- args.name %>" class="tabList">
+	<div class="tabList" id="tabList-<%- args.name %>">
 		<% if(args.items) { %>
 			<% for(var item of args.items) { %>
 				<%- lib.include('theme/listitem.html', Object.assign({ tabname: args.name}, item)) %>
 			<% } %>
 		<% } %>
-	</table>
-</td>
+	</div>
+</div>

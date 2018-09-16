@@ -12,7 +12,7 @@
 		<%- args.head(__append) %>
 	<% } %>
 </head>
-<body background="/assets/background.svg">
+<body>
 	<div id="content">
 		<%# banner at top of page %>
 		<div style="text-align:center">
@@ -20,13 +20,11 @@
 		</div>
 		
 		<%# the tabs %>
-		<table id="tabs">
-			<tr id="tabsrow">
-				<% for(var tab of site.tabs.items) { %>
-					<%- lib.include('theme/tab.html', tab) %>
-				<% } %>
-			</tr>
-		</table>
+		<div id="tabs">
+			<% for(var tab of site.tabs.items) { %>
+				<%- lib.include('theme/tab.html', tab) %>
+			<% } %>
+		</div>
 		
 		<%# actual content %>
 		<div class="midsection">

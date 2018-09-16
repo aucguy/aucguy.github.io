@@ -81,28 +81,10 @@
 		}
 	}
 	
-	
-	function showTabList(tablist) {
-		tablist.style.display = "block";
-	}
-	
-	function hideTabList(tablist) {
-		tablist.style.display = "none";
-	}
-	
 	document.addEventListener("DOMContentLoaded", function() {
 		var loadButton = document.getElementById('loadButton');
 		if(loadButton !== null) {
 			loadButton.addEventListener('click', loadPosts);
-		}
-		var tabsrow = document.getElementById('tabsrow');
-		if(tabsrow !== null) {
-			for(var i=0; i<tabsrow.children.length; i++) {
-				var tab = tabsrow.children[i];
-				var tablist = document.getElementById('tabList-' + tab.id.replace('tab-', ''));
-				tab.addEventListener('mouseover', showTabList.bind(null, tablist));
-				tab.addEventListener('mouseout', hideTabList.bind(null, tablist));
-			}
 		}
 		
 		var elems = document.getElementsByTagName('meta');

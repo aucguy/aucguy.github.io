@@ -479,11 +479,11 @@ async function build() {
 	
 	await del('public/**/*');
 	
-	gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js'])
+	gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js', '!src/style.css'])
 		.pipe(gulpPress())
 		.pipe(gulp.dest('public'))
 		
-	gulp.src('src/script.js')
+	gulp.src(['src/script.js', 'src/style.css'])
 		.pipe(gulp_ejs(ejsData))
 		.pipe(gulpPress())
 		.pipe(gulp.dest('public'))
