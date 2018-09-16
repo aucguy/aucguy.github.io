@@ -22,7 +22,22 @@
 		<%# the tabs %>
 		<div id="tabs">
 			<% for(var tab of site.tabs.items) { %>
-				<%- lib.include('theme/tab.html', tab) %>
+				<div class="tab" id="tab-<%- tab.name %>">
+					<a href="<%- args.link %>">
+						<%- tab.name %>
+					</a>
+					<div class="tabList" id="tabList-<%- tab.name %>">
+						<% if(tab.items) { %>
+							<% for(var item of tab.items) { %>
+								<a href="<%- item.link %>">
+									<div class="listItem">
+										<%- item.name %>
+									</div>
+								</a>
+							<% } %>
+						<% } %>
+					</div>
+				</div>
 			<% } %>
 		</div>
 		
