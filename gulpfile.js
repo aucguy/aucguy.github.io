@@ -435,36 +435,6 @@ async function outputBuild(outputBuild, oldSiteData) {
 	return newSiteData;
 }
 
-async function createTabElement(ejsData, info, tab, pathTemplate, contentTemplate) {
-	var pathname = pathTemplate.replace(':name', info.name).replace(':tab', tab.name);
-	pathname = path.join('public', pathname);
-	
-	var data = Object.assign({ tab: info }, ejsData);
-	await mkdirs(path.dirname(pathname));
-	await writeFilePress(pathname, contentTemplate(data));
-}
-
-async function generateTabs(ejsData) {
-	var tabs = ejsData.site.tabs;
-	if(!tabs) {
-		return;
-	}
-	var tabPath = tabs.tabPath;
-	var itemPath = tabs.itemPath;
-	var tabTemplate = await compileTemplate(tabs.tabTemplate);
-	var itemTemplate = await compileTemplate(tabs.itemTemplate);
-	var promises = [];
-	
-	for(var tab of tabs.items) {
-		await createTabElement(ejsData, tab, tab, tabPath, tabTemplate);
-		if(tab.items) {
-			for(var item of tab.items) {
-				await createTabElement(ejsData, item, tab, itemPath, itemTemplate);
-			}
-		}
-	}
-}
-
 async function build() {
 	var ejsData = await readSite();
 	var site = ejsData.site;
@@ -499,9 +469,7 @@ async function build() {
 				.pipe(gulpPress())
 				.pipe(gulp.dest('public'));
 		});
-	
-	await generateTabs(ejsData);
-	
+		
 	if(site.outputBuild) {
 		newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
 	}

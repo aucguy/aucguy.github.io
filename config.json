@@ -11,10 +11,6 @@
 		}
 	},
 	"tabs": {
-		"tabPath": "assets/tabs/tab-:name.svg",
-		"tabTemplate": "theme/tab.svg",
-		"itemPath": "assets/tabs/item-:tab-:name.svg",
-		"itemTemplate": "theme/listitem.svg",
 		"items": [
 			{
 				"name": "Blog",
