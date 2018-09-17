@@ -64,16 +64,6 @@
 			}
 		]
 	},
-	"ignore-file": {
-		"exclude": [
-			"**/svgo.yml",
-			"/Gemfile",
-			"/Gemfile.lock",
-			"/runServer.bat",
-			"/package.json",
-			"/setup"
-		]
-	},
 	"outputBuild": [
 		{
 			"dir": "repos/Ludum-Dare-33",
