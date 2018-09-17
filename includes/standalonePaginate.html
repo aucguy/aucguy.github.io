@@ -1,4 +1,4 @@
-<%- lib.include('theme/theme.html', {
+<%- lib.include('theme.html', {
 	title: `feed page ${paginator.page + 1} of ${paginator.totalPages}`,
 	midsection: () => lib.includePage(`public/paginates/paginate${paginator.page}.html`, true)
 }) %>
