@@ -38,7 +38,7 @@
 	var nextPage = 1;
 	
 	function setLoadButtonStyle(style) {
-		document.getElementById('loadButtonDiv').style.display = style;
+		document.getElementById('loadButton').style.display = style;
 	}
 	
 	function loadPosts() {
@@ -96,7 +96,7 @@
 			}
 		}
 		if(totalPages !== null) {
-			setLoadButtonStyle('inline');
+			setLoadButtonStyle('flex');
 		}
 	});
 })();

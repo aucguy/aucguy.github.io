@@ -26,7 +26,6 @@ body
 	color: white;
 	background: red;
 	padding: 5px;
-	/* margin: 5px; */
 	border-radius: 5px;
 }
 
@@ -74,22 +73,23 @@ a:active
 	border-radius: 5px;
 }
 
-.loadButtonDiv
+.loadButton
 {
 	display: none;
-	position: relative;
-	left: 10%;
-	margin: 5px
+	margin: 0px 3%;
+	background: red;
+	justify-content: center;
+	border-radius: 5px;
+	border: 3px solid black;
+	font-size: 125%
 }
 
 .postMain
 {
-	position:relative;
-	left:3%;
-	width:95%;
-	border:3px solid gray;
+	margin: 0px 3%;
+	border: 3px solid gray;
 	border-radius: 5px;
-	background: white
+	background: white;
 }
 
 .postDiv
@@ -121,9 +121,9 @@ a:active
 
 .wavedemo
 {
-	border:none;
-	width:100%;
-	height:530px
+	border: none;
+	width: 100%;
+	height: 530px
 }
 
 .titleText
