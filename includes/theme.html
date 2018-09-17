@@ -23,7 +23,7 @@
 		<div id="tabs">
 			<% for(var tab of site.tabs.items) { %>
 				<div class="tab" id="tab-<%- tab.name %>">
-					<a href="<%- args.link %>">
+					<a href="<%- tab.link %>">
 						<%- tab.name %>
 					</a>
 					<% if(tab.items) { %>
