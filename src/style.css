@@ -7,7 +7,8 @@ body
 {
 	background: lightgray;
 	position: absolute;
-	border: 5px groove gray;
+	border: 5px solid gray;
+	border-radius: 5px;
 	left: 10%;
 	width: 80%
 }
@@ -86,7 +87,9 @@ a:active
 	position:relative;
 	left:3%;
 	width:95%;
-	border:3px solid gray
+	border:3px solid gray;
+	border-radius: 5px;
+	background: white
 }
 
 .postDiv
@@ -106,6 +109,7 @@ a:active
 
 .postContent
 {
+	margin: 0px 1%;
 	text-indent: 3%
 }
 
