@@ -23,13 +23,13 @@
 		<div id="tabs">
 			<% for(var tab of site.tabs.items) { %>
 				<div class="tab" id="tab-<%- tab.name %>">
-					<a href="<%- tab.link %>">
+					<a class="tabLink" href="<%- tab.link %>">
 						<%- tab.name %>
 					</a>
 					<% if(tab.items) { %>
 						<div class="tabList" id="tabList-<%- tab.name %>">		
 							<% for(var item of tab.items) { %>
-								<a href="<%- item.link %>">
+								<a class="tabLink" href="<%- item.link %>">
 									<div class="listItem">
 										<%- item.name %>
 									</div>

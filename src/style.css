@@ -29,27 +29,27 @@ body
 	border-radius: 5px;
 }
 
-a
+.tabLink
 {
 	color: black
 }
 
-a:link
+.tabLink:link
 {
     text-decoration: none;
 }
 
-a:visited
+.tabLink:visited
 {
     text-decoration: none;
 }
 
-a:hover
+.tabLink:hover
 {
     text-decoration: underline;
 }
 
-a:active
+.tabLink:active
 {
     text-decoration: underline;
 }
