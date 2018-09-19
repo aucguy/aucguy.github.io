@@ -1,4 +1,4 @@
-<% function midsection(__append) { %>
+<% function content(__append) { %>
 <%- lib.markdown(`
 This entry was written in python and must be downloaded in order to run.
 ShadowsAndLightsBuild.zip is the recommended download.
@@ -17,4 +17,4 @@ Building ShadowsAndLights.zip requires cx_freeze to be installed.
 `); %>
 <% } %>
 
-<%- lib.include('theme.html', { midsection, title: 'Ludum Dare 30 entry (Shadows and Lights)' }) %>
+<%- lib.include('content.html', { content, title: 'Ludum Dare 30 entry (Shadows and Lights)' }) %>

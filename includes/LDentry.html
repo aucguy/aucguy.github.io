@@ -1,5 +1,4 @@
-<% function midsection(__append) { %>
-<div style="position:relative;left:2%">
+<% function content(__append) { %>
 <h1>
 	<%- args.title %>
 </h1>
@@ -10,7 +9,6 @@
 <p>
 	<a href="<%- args.entryLink %>">Ludum Dare Entry</a>
 </p>
-</div>
 <% } %>
 
-<%- lib.include('theme.html', { midsection }) %>
+<%- lib.include('content.html', { content }) %>

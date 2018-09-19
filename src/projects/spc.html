@@ -1,5 +1,4 @@
-<% function midsection(__append) { %>
-<div class="standalone">
+<% function content(__append) { %>
 <%- lib.markdown(`
 This is a continuation/update of sijobe\'s spc mod.
 
@@ -21,7 +20,6 @@ This is a continuation/update of sijobe\'s spc mod.
 * [5.1-1.7.10](/downloads/spc/spc-5.1-1.7.10.jar)
 * [5.0-1.7.2](/downloads/spc/spc-5.0-1.7.2.jar)
 `) %>
-</div>
 <% } %>
 
-<%- lib.include('theme.html', { midsection, title: 'Single Player Commands' }) %>
+<%- lib.include('content.html', { content, title: 'Single Player Commands' }) %>
