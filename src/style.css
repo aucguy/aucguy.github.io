@@ -1,13 +1,13 @@
 body
 {
-	background-color: blue
+	background-color: darkblue
 }
 
 #content
 {
-	background: lightgray;
+	background: #dbdbdb;
 	position: absolute;
-	border: 5px solid gray;
+	border: 5px solid black;
 	border-radius: 5px;
 	left: 10%;
 	width: 80%
@@ -15,16 +15,16 @@ body
 
 #tabs
 {
-	position:relative;
-	left:7%;
-	z-index:3
+	position: relative;
+	left: 7%;
+	z-index: 3
 }
 
 .tab
 {
 	display: inline-block;
 	color: white;
-	background: red;
+	background: darkgray;
 	padding: 5px;
 	border-radius: 5px;
 }
@@ -67,7 +67,7 @@ a:active
 {
 	display: block;
 	color: black;
-	background: red;
+	background: darkgray;
 	padding: 5px;
 	margin: 5px;
 	border-radius: 5px;
@@ -77,10 +77,10 @@ a:active
 {
 	display: none;
 	margin: 0px 3%;
-	background: red;
+	background: darkgray;
 	justify-content: center;
 	border-radius: 5px;
-	border: 3px solid black;
+	border: 3px solid gray;
 	font-size: 125%
 }
 
