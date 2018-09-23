@@ -14,7 +14,13 @@
 		"items": [
 			{
 				"name": "Blog",
-				"link": "/index.html"
+				"link": "/index.html",
+				"items": [
+					{
+						"name": "Posts",
+						"link": "/posts/posts.html"
+					}
+				]
 			},
 			{
 				"name": "Projects",

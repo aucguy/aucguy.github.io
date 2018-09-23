@@ -1,0 +1,6 @@
+<% function midsection(__append) { %>
+	<%- post.contents %>
+	<p></p>
+<% } %>
+
+<%- lib.include('theme.html', { midsection, title: post.title }) %>

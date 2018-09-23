@@ -1,0 +1,11 @@
+<% function content(__append) {
+	var posts = lib.getPosts();
+	var output = ['#Posts\n\n'];
+	for(var post of posts) {
+		var path = post.path.replace(/^build/, '');
+		output.push(`* [${post.title} - ${lib.date(post.date)}](${path})\n`);
+	} %>
+	<%- lib.markdown(output.join('')); %>
+<% } %>
+
+<%- lib.include('content.html', { content, title: 'Posts' }) %>

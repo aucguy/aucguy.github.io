@@ -22,7 +22,7 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
 
 const SITE_DATA_PATH = 'build/siteData.json';
-const POST_DATES_PATH = 'build/postDates.json';
+const POST_DATA_PATH = 'build/postData.json';
 const POSTS_PATH = 'build/posts';
 
 const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
@@ -240,7 +240,8 @@ async function readSite() {
 		},
 		readConfig: function(file) {
 			return JSON.parse(fs.readFileSync(file).toString());
-		}
+		},
+		getPosts
 	}
 	
 	return {
@@ -279,20 +280,27 @@ function splitFrontMatter(str) {
 	};
 }
 
+async function extractPostFrontmatter(pattern, base) {
+	var postData = {};
+	for(var file of await globPromise(pattern)) {
+		var content = await readFile(file, { encoding: 'utf-8' });
+		var parts = splitFrontMatter(content.toString('utf-8'));
+		var key = path.relative(base, file).replace(/[.]md$/, '');
+		if(key in postData) {
+			throw(new Error(`duplicate post name: ${key}`));
+		}
+		postData[key] = parts.frontMatter;
+	}
+	await writeFileMkdirs(POST_DATA_PATH, JSON.stringify(postData));
+}
+
 async function formatPost(ejsData, postTemplatePath) {
 	var postTemplate = await compileTemplate(postTemplatePath);
-	var postData = {};
 	return through2.obj(function(file, enc, callback) {
 		var parts = splitFrontMatter(file.contents.toString(enc));
 		var data = Object.assign({ frontMatter: parts.frontMatter }, ejsData);
 		var content = ejs.render(markdown.toHTML(parts.body), data);
 		data.content = content;
-		
-		var key = path.relative(file.base, file.path).replace(/[.]md$/, '');
-		if(key in postData) {
-			throw(new Error(`duplicate post name: ${key}`));
-		}
-		postData[key] = parts.frontMatter.date;
 		
 		this.push(new Vinyl({
 			cwd: file.cwd,
@@ -301,17 +309,21 @@ async function formatPost(ejsData, postTemplatePath) {
 			contents: Buffer.from(postTemplate(data), enc)
 		}));
 		callback();
-	}, function(callback) {
-		writeFileMkdirs(POST_DATES_PATH, JSON.stringify(postData)).then(callback);
 	});
 }
 
-async function getPosts() {
-	var files = await globPromise(path.join(POSTS_PATH, '**/*.html'));
-	var postData = JSON.parse(await readFile(POST_DATES_PATH));
+function getPosts() {
+	var postData = JSON.parse(fs.readFileSync(POST_DATA_PATH));
+	var files = glob.sync(path.join(POSTS_PATH, '**/*.html')).map(i => {
+		return {
+			path: i,
+			date: postData[path.basename(i, '.html')].date,
+			title: postData[path.basename(i, '.html')].title
+		};
+	});
 	files.sort(function(a, b) {
-		var partsA = postData[path.basename(a, '.html')].split('-').map(Number);
-		var partsB = postData[path.basename(b, '.html')].split('-').map(Number);
+		var partsA = a.date.split('-').map(Number);
+		var partsB = b.date.split('-').map(Number);
 		for(var i = 0; i < 5; i++) {
 			if(partsA[i] === undefined || partsB[i] === undefined) {
 				break;
@@ -435,6 +447,27 @@ async function outputBuild(outputBuild, oldSiteData) {
 	return newSiteData;
 }
 
+async function formatStandalonePost(ejsData, templatePath) {
+	var template = await compileTemplate(templatePath);
+	var postData = JSON.parse(await readFile(POST_DATA_PATH));
+	return through2.obj(function(file, enc, callback) {
+		var key = path.relative(file.base, file.path).replace(/[.]html$/, '');
+		var data = Object.assign({
+			post: {
+				contents: file.contents.toString(enc),
+				title: postData[key].title
+			}
+		}, ejsData);
+		this.push(new Vinyl({
+			cwd: file.cwd,
+			base: file.base,
+			path: file.path,
+			contents: Buffer.from(template(data), enc)
+		}));
+		callback();
+	});
+}
+
 async function build() {
 	var ejsData = await readSite();
 	var site = ejsData.site;
@@ -456,19 +489,25 @@ async function build() {
 	gulp.src(['src/script.js', 'src/style.css'])
 		.pipe(gulp_ejs(ejsData))
 		.pipe(gulpPress())
-		.pipe(gulp.dest('public'))
+		.pipe(gulp.dest('public'));
 	
-	gulp.src('posts/**/*.md')
+	await extractPostFrontmatter('posts/**/*.md', 'posts');
+	await gulpPromise(gulp.src('posts/**/*.md')
 		.pipe(await formatPost(ejsData, 'post.html'))
 		.pipe(extReplace('.html'))
-		.pipe(gulp.dest(POSTS_PATH))
-		.on('end', async function() {
-			await generatePaginates(ejsData);
-			gulp.src('src/**/*.html')
-				.pipe(gulp_ejs(ejsData))
-				.pipe(gulpPress())
-				.pipe(gulp.dest('public'));
-		});
+		.pipe(gulp.dest(POSTS_PATH)));
+	
+	await gulpPromise(gulp.src(path.join(POSTS_PATH, '**/*.html'))
+		.pipe(await formatStandalonePost(ejsData, 'standalonePost.html'))
+		.pipe(extReplace('.html'))
+		.pipe(gulpPress())
+		.pipe(gulp.dest('public/posts')));
+	
+	await generatePaginates(ejsData);
+	gulp.src('src/**/*.html')
+		.pipe(gulp_ejs(ejsData))
+		.pipe(gulpPress())
+		.pipe(gulp.dest('public'));
 		
 	if(site.outputBuild) {
 		newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
