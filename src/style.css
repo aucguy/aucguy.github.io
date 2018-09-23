@@ -117,7 +117,7 @@ body
 .standalone
 {
 	position: relative;
-	left: 2%
+	padding: 0px 2%;
 }
 
 .wavedemo
