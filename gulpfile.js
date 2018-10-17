@@ -17,6 +17,7 @@ const htmlMinify = require('html-minifier').minify;
 const svgo = require('svgo');
 const babel = require('@babel/core');
 const uglifycss = require('uglifycss');
+const minimatch = require('minimatch');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
@@ -26,6 +27,31 @@ const POST_DATA_PATH = 'build/postData.json';
 const POSTS_PATH = 'build/posts';
 
 const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
+
+function createRouter() {
+	var rules = [];
+	
+	return {
+		addRule: function(matcher, generator) {
+			rules.push({
+				matcher,
+				generator,
+			});
+		},
+		generate: function(key) {
+			var rule = rules.find(rule => rule.matcher(key));
+			if(rule === undefined) {
+				console.warn(`rule for ${key} not found`);
+				return null;
+			}
+			return rule.generator(key);
+		} 
+	};
+}
+
+function matchEquals(a) {
+	return (b) => a === b;
+}
 
 function promisify(func) {
 	return function() {
@@ -67,6 +93,14 @@ async function mkdirs(pathname) {
 	if(!await exists(pathname)) {
 		await mkdirs(path.dirname(pathname));
 		await mkdir(pathname);
+	}
+}
+
+
+function mkdirsSync(pathname) {
+	if(!fs.existsSync(pathname)) {
+		mkdirsSync(path.dirname(pathname));
+		fs.mkdirSync(pathname);
 	}
 }
 
@@ -212,17 +246,17 @@ function timeToStr(time) {
 	return str;
 }
 
-async function readSite() {
+async function readSite(router) {
 	var data = await readFile('config.json');
 	var site = JSON.parse(data.toString());
 	
 	var lib = {
 		includePage: function(file, args, noPreprocess) {
-			var data = fs.readFileSync(file).toString();
+			var data = router.generate(file);
 			if(noPreprocess) {
 				return data;
 			} else {
-				return ejs.render(data.toString(), {
+				return ejs.render(data, {
 					lib,
 					args,
 					site
@@ -469,9 +503,11 @@ async function formatStandalonePost(ejsData, templatePath) {
 }
 
 async function build() {
-	var ejsData = await readSite();
+	debugger;
+	var router = createRouter();
+	var ejsData = await readSite(router);
 	var site = ejsData.site;
-	
+		
 	var oldSiteData;
 	if(await exists(SITE_DATA_PATH)) {
 		oldSiteData = JSON.parse(await readFile(SITE_DATA_PATH));
@@ -480,38 +516,71 @@ async function build() {
 	}
 	var newSiteData = {};
 	
+	
 	await del('public/**/*');
 	
-	gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js', '!src/style.css'])
-		.pipe(gulpPress())
-		.pipe(gulp.dest('public'))
+	router.addRule(matchEquals('$main'), () => {
+		for(var file of glob.sync('src/**/*', { nodir: true })) {
+			router.generate(file.replace(/^src/, 'public'));
+		}
+	});
+	
+	router.addRule(key => minimatch(key, 'includes/**/*'), key => fs.readFileSync(key).toString())
+	
+	router.addRule(key => {
+		var file = key.replace(/^public/, 'src');
+		return minimatch(key, 'public/**/*') && fs.existsSync(file)
+			&& fs.statSync(file).isFile();
+	}, key => {
+		if(fs.existsSync(key)) {
+			return fs.readFileSync(key);
+		}
+		var file = key.replace(/^public/, 'src');
+		var contents = fs.readFileSync(file);
+		if(path.extname(key) === '.html' 
+			|| path.normalize(key) === path.normalize('public/script.js')
+			|| path.normalize(key) === path.normalize('public/style.css')) {
+			contents = ejs.render(contents.toString(), ejsData);
+		}
+		mkdirsSync(path.dirname(key));
+		fs.writeFileSync(key, contents);
+		return contents;
+	});
+	
+	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html'), key => '');
+	
+	router.generate('$main');
+	
+	//gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js', '!src/style.css'])
+	//	.pipe(gulpPress())
+	//	.pipe(gulp.dest('public'))
 		
-	gulp.src(['src/script.js', 'src/style.css'])
-		.pipe(gulp_ejs(ejsData))
-		.pipe(gulpPress())
-		.pipe(gulp.dest('public'));
+	//gulp.src(['src/script.js', 'src/style.css'])
+	//	.pipe(gulp_ejs(ejsData))
+	//	.pipe(gulpPress())
+	//	.pipe(gulp.dest('public'));
 	
-	await extractPostFrontmatter('posts/**/*.md', 'posts');
-	await gulpPromise(gulp.src('posts/**/*.md')
-		.pipe(await formatPost(ejsData, 'post.html'))
-		.pipe(extReplace('.html'))
-		.pipe(gulp.dest(POSTS_PATH)));
+	//await extractPostFrontmatter('posts/**/*.md', 'posts');
+	//await gulpPromise(gulp.src('posts/**/*.md')
+	//	.pipe(await formatPost(ejsData, 'post.html'))
+	//	.pipe(extReplace('.html'))
+	//	.pipe(gulp.dest(POSTS_PATH)));
 	
-	await gulpPromise(gulp.src(path.join(POSTS_PATH, '**/*.html'))
-		.pipe(await formatStandalonePost(ejsData, 'standalonePost.html'))
-		.pipe(extReplace('.html'))
-		.pipe(gulpPress())
-		.pipe(gulp.dest('public/posts')));
+	//await gulpPromise(gulp.src(path.join(POSTS_PATH, '**/*.html'))
+	//	.pipe(await formatStandalonePost(ejsData, 'standalonePost.html'))
+	//	.pipe(extReplace('.html'))
+	//	.pipe(gulpPress())
+	//	.pipe(gulp.dest('public/posts')));
 	
-	await generatePaginates(ejsData);
-	gulp.src('src/**/*.html')
-		.pipe(gulp_ejs(ejsData))
-		.pipe(gulpPress())
-		.pipe(gulp.dest('public'));
+	//await generatePaginates(ejsData);
+	//gulp.src('src/**/*.html')
+	//	.pipe(gulp_ejs(ejsData))
+	//	.pipe(gulpPress())
+	//	.pipe(gulp.dest('public'));
 		
-	if(site.outputBuild) {
-		newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
-	}
+	//if(site.outputBuild) {
+	//	newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
+	//}
 	await writeFileMkdirs(SITE_DATA_PATH, JSON.stringify(newSiteData));
 	console.log('finished build');
 }
