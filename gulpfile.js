@@ -30,27 +30,63 @@ const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
 
 function createRouter() {
 	var rules = [];
+	var cache = new Map();
 	
-	return {
-		addRule: function(matcher, generator) {
+	var self = {
+		addRule: function(matcher, generator, cacher) {
 			rules.push({
 				matcher,
 				generator,
+				cacher: cacher || cacherNone
 			});
 		},
 		generate: function(key) {
+			if(cache.has(key)) {
+				return cache.get(key);
+			}
+			if(fs.existsSync(key)) {
+				return fs.readFileSync(key).toString();
+			}
 			var rule = rules.find(rule => rule.matcher(key));
 			if(rule === undefined) {
 				console.warn(`rule for ${key} not found`);
 				return null;
 			}
-			return rule.generator(key);
-		} 
+			var value = rule.generator(key);
+			rule.cacher(self, key, value);
+			return value;
+		},
+		getMemoryCache: function() {
+			return cache;
+		}
 	};
+	return self;
+}
+
+function cacherNone(router, key, value) {
+	return value;
+}
+
+function cacherMemory(router, key, value) {
+	router.getMemoryCache().set(key, value);
+}
+
+function cacherFile(router, key, value) {
+	mkdirsSync(path.dirname(key));
+	fs.writeFileSync(key, value);
 }
 
 function matchEquals(a) {
 	return (b) => a === b;
+}
+
+function isInt(x) {
+	try {
+		parseInt(x);
+		return true;
+	} catch(e) {
+		return false;
+	}
 }
 
 function promisify(func) {
@@ -285,8 +321,8 @@ async function readSite(router) {
 	};
 }
 
-async function compileTemplate(pathname) {
-	var data = await readFile(path.join('includes', pathname));
+function compileTemplate(pathname) {
+	var data = fs.readFileSync(path.join('includes', pathname));
 	return ejs.compile(data.toString());
 }
 
@@ -314,18 +350,36 @@ function splitFrontMatter(str) {
 	};
 }
 
-async function extractPostFrontmatter(pattern, base) {
-	var postData = {};
-	for(var file of await globPromise(pattern)) {
-		var content = await readFile(file, { encoding: 'utf-8' });
+function extractPostFrontmatter() {
+	var posts = [];
+	for(var file of glob.sync('posts/**/*.md')) {
+		var content = fs.readFileSync(file, { encoding: 'utf-8' });
 		var parts = splitFrontMatter(content.toString('utf-8'));
-		var key = path.relative(base, file).replace(/[.]md$/, '');
-		if(key in postData) {
+		var key = path.relative('posts', file).replace(/[.]md$/, '');
+		if(key in posts) {
 			throw(new Error(`duplicate post name: ${key}`));
 		}
-		postData[key] = parts.frontMatter;
+		posts.push(Object.assign({ path: path.join('build/posts', key + '.md') }, parts.frontMatter));
 	}
-	await writeFileMkdirs(POST_DATA_PATH, JSON.stringify(postData));
+	posts.sort(function(a, b) {
+		var partsA = a.date.split('-').map(Number);
+		var partsB = b.date.split('-').map(Number);
+		for(var i = 0; i < 5; i++) {
+			if(partsA[i] === undefined || partsB[i] === undefined) {
+				break;
+			}
+			if(partsA[i] < partsB[i]) {
+				return -1;
+			} else if(partsA[i] > partsB[i]) {
+				return 1;
+			}
+		}
+		throw(`ambigious time order for ${a} and ${b}`);
+	});
+	posts.reverse(); //so its newest to oldest
+	return {
+		posts
+	}
 }
 
 async function formatPost(ejsData, postTemplatePath) {
@@ -374,9 +428,9 @@ function getPosts() {
 	return files;
 }
 
-async function createPaginateType(config, standalone) {
+function createPaginateType(config, standalone) {
 	return {
-		template: await compileTemplate(config.template),
+		template: compileTemplate(config.template),
 		path: config.output,
 		standalone
 	};
@@ -396,34 +450,29 @@ async function writePaginate(template, data, i) {
 	await writeFilePress(pathname, contents);
 }
 
-async function generatePaginates(ejsData) {
-	var config = ejsData.site.paginate;
+function generatePaginate(key, ejsData, site, router) {
+	var config = site.paginate;
 	if(!config) {
 		throw(new Error('paginate config not found'));
 	}
-	var files = await getPosts();
-	await mkdirs('public/paginates');
+	var postData = router.generate('$postData');
+	var totalPages = postData.posts.length;
 	
-	var embeddedTemplate = await createPaginateType(config.embedded, false);
-	var standaloneTemplate = await createPaginateType(config.standalone, true);
+	var i = parseInt(path.basename(key, '.html').replace(/^paginate/, ''));
 	
-	var totalPages = Math.ceil(files.length / config.postsPerPage);
-	for(var i = 0; i < totalPages; i++) {
-		var data = Object.assign({
-			paginator: {
-				nextPage: nextPage(embeddedTemplate, i, totalPages),
-				nextStandalonePage: nextPage(standaloneTemplate, i, totalPages),
-				posts: files.slice(i * totalPages, (i + 1) * totalPages),
-				page: i,
-				totalPages
-			}
-		}, ejsData);
-		await writePaginate(embeddedTemplate, data, i);
-		await writePaginate(standaloneTemplate, data, i);
-	}
-	await writeFile('build/paginate.json', JSON.stringify({
-		totalPages
-	}));
+	var embeddedTemplate = createPaginateType(config.embedded, false);
+	var standaloneTemplate = createPaginateType(config.standalone, true);
+	
+	var data = Object.assign({
+		paginator: {
+			nextPage: nextPage(embeddedTemplate, i, totalPages),
+			nextStandalonePage: nextPage(standaloneTemplate, i, totalPages),
+			posts: postData.posts.slice(i * totalPages, (i + 1) * totalPages),
+			page: i,
+			totalPages
+		}
+	}, ejsData);
+	return embeddedTemplate.template(data);
 }
 
 async function createRepo(data, oldSiteData) {
@@ -503,7 +552,6 @@ async function formatStandalonePost(ejsData, templatePath) {
 }
 
 async function build() {
-	debugger;
 	var router = createRouter();
 	var ejsData = await readSite(router);
 	var site = ejsData.site;
@@ -532,9 +580,6 @@ async function build() {
 		return minimatch(key, 'public/**/*') && fs.existsSync(file)
 			&& fs.statSync(file).isFile();
 	}, key => {
-		if(fs.existsSync(key)) {
-			return fs.readFileSync(key);
-		}
 		var file = key.replace(/^public/, 'src');
 		var contents = fs.readFileSync(file);
 		if(path.extname(key) === '.html' 
@@ -542,12 +587,15 @@ async function build() {
 			|| path.normalize(key) === path.normalize('public/style.css')) {
 			contents = ejs.render(contents.toString(), ejsData);
 		}
-		mkdirsSync(path.dirname(key));
-		fs.writeFileSync(key, contents);
 		return contents;
-	});
+	}, cacherFile);
 	
-	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html'), key => '');
+	router.addRule(key => minimatch(key, 'build/posts/**/*'), key => `post ${key}`);
+	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html')
+			&& isInt(path.basename(key, '.html').replace(/^paginate/, '')),
+			key => generatePaginate(key, ejsData, site, router), cacherFile);
+	
+	router.addRule(key => matchEquals('$postData'), extractPostFrontmatter, cacherMemory);
 	
 	router.generate('$main');
 	
