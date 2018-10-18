@@ -288,7 +288,7 @@ async function readSite(router) {
 	
 	var lib = {
 		includePage: function(file, args, noPreprocess) {
-			var data = router.generate(file);
+			var data = router.generate(file).toString();
 			if(noPreprocess) {
 				return data;
 			} else {
@@ -382,22 +382,15 @@ function extractPostFrontmatter() {
 	}
 }
 
-async function formatPost(ejsData, postTemplatePath) {
-	var postTemplate = await compileTemplate(postTemplatePath);
-	return through2.obj(function(file, enc, callback) {
-		var parts = splitFrontMatter(file.contents.toString(enc));
-		var data = Object.assign({ frontMatter: parts.frontMatter }, ejsData);
-		var content = ejs.render(markdown.toHTML(parts.body), data);
-		data.content = content;
-		
-		this.push(new Vinyl({
-			cwd: file.cwd,
-			base: file.base,
-			path: file.path,
-			contents: Buffer.from(postTemplate(data), enc)
-		}));
-		callback();
-	});
+function formatPost(key, ejsData, postTemplatePath) {
+	var content = fs.readFileSync(key.replace(/^build/, '').slice(1));
+	var parts = splitFrontMatter(content.toString());
+	var data = Object.assign({
+		content: markdown.toHTML(parts.body),
+		frontMatter: parts.frontMatter
+	}, ejsData);
+	var template = compileTemplate(postTemplatePath);
+	return template(data);
 }
 
 function getPosts() {
@@ -590,7 +583,12 @@ async function build() {
 		return contents;
 	}, cacherFile);
 	
-	router.addRule(key => minimatch(key, 'build/posts/**/*'), key => `post ${key}`);
+	router.addRule(key => {
+		var file = key.replace(/^build/, '').slice(1);
+		return minimatch(key, 'build/posts/**/*.md') && fs.existsSync(file)
+			&& fs.statSync(file).isFile();
+	}, key => formatPost(key, ejsData, 'post.html'));
+	
 	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html')
 			&& isInt(path.basename(key, '.html').replace(/^paginate/, '')),
 			key => generatePaginate(key, ejsData, site, router), cacherFile);
