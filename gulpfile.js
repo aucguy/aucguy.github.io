@@ -76,10 +76,6 @@ function cacherFile(router, key, value) {
 	fs.writeFileSync(key, value);
 }
 
-function matchEquals(a) {
-	return (b) => a === b;
-}
-
 function isInt(x) {
 	try {
 		parseInt(x);
@@ -507,25 +503,17 @@ async function outputBuild(outputBuild, oldSiteData) {
 	return newSiteData;
 }
 
-async function formatStandalonePost(ejsData, templatePath) {
-	var template = await compileTemplate(templatePath);
-	var postData = JSON.parse(await readFile(POST_DATA_PATH));
-	return through2.obj(function(file, enc, callback) {
-		var key = path.relative(file.base, file.path).replace(/[.]html$/, '');
-		var data = Object.assign({
-			post: {
-				contents: file.contents.toString(enc),
-				title: postData[key].title
-			}
-		}, ejsData);
-		this.push(new Vinyl({
-			cwd: file.cwd,
-			base: file.base,
-			path: file.path,
-			contents: Buffer.from(template(data), enc)
-		}));
-		callback();
-	});
+function formatStandalonePost(key, ejsData, router, templatePath) {
+	var template = compileTemplate(templatePath);
+	var postData = router.generate('$postData');
+	var file = key.replace(/^public/, 'build');
+	var data = Object.assign({
+		post: {
+			contents: router.generate(file),
+			title: postData.posts.find(post => path.normalize(file) === path.normalize(post.path)).title
+		}
+	}, ejsData);
+	return template(data);
 }
 
 async function build() {
@@ -543,11 +531,14 @@ async function build() {
 	
 	await del('public/**/*');
 	
-	router.addRule(matchEquals('$main'), () => {
+	router.addRule(key => key === '$main', () => {
 		for(var file of glob.sync('src/**/*', { nodir: true })) {
 			router.generate(file.replace(/^src/, 'public'));
 		}
 		var postData = router.generate('$postData');
+		for(var post of postData.posts) {
+			router.generate(post.path.replace(/^build/, 'public'));
+		}
 		for(var i=0; i<postData.totalPaginates; i++) {
 			router.generate(`public/paginates/paginate${i}.html`);
 			router.generate(`public/paginates/standalonePaginate${i}.html`);
@@ -577,6 +568,12 @@ async function build() {
 			&& fs.statSync(file).isFile();
 	}, key => formatPost(key, ejsData, 'post.html'), cacherFile);
 	
+	router.addRule(key => {
+		var file = key.replace(/^public/, '').replace(/[.]html$/, '.md').slice(1);
+		return minimatch(key, 'public/posts/**/*.html') && fs.existsSync(file)
+			&& fs.statSync(file).isFile();
+	}, key => formatStandalonePost(key, ejsData, router, 'standalonePost.html'), cacherFile);
+	
 	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html')
 			&& isInt(path.basename(key, '.html').replace(/^paginate/, '')),
 			key => generatePaginate(key, ejsData, site, router, true), cacherFile);
@@ -585,7 +582,7 @@ async function build() {
 			&& isInt(path.basename(key, '.html').replace(/^standalonePaginate/, '')),
 			key => generatePaginate(key, ejsData, site, router, false), cacherFile);
 	
-	router.addRule(key => matchEquals('$postData'), key => extractPostFrontmatter(site), cacherMemory);
+	router.addRule(key => key === '$postData', key => extractPostFrontmatter(site), cacherMemory);
 	
 	router.generate('$main');
 	
