@@ -361,7 +361,7 @@ function extractPostFrontmatter(site) {
 		if(key in posts) {
 			throw(new Error(`duplicate post name: ${key}`));
 		}
-		posts.push(Object.assign({ path: path.join('build/posts', key + '.md') }, parts.frontMatter));
+		posts.push(Object.assign({ path: path.join('build/posts', key + '.html') }, parts.frontMatter));
 	}
 	posts.sort(function(a, b) {
 		var partsA = a.date.split('-').map(Number);
@@ -386,7 +386,7 @@ function extractPostFrontmatter(site) {
 }
 
 function formatPost(key, ejsData, postTemplatePath) {
-	var content = fs.readFileSync(key.replace(/^build/, '').slice(1));
+	var content = fs.readFileSync(key.replace(/^build/, '').replace(/[.]html/, '.md').slice(1));
 	var parts = splitFrontMatter(content.toString());
 	var data = Object.assign({
 		content: markdown.toHTML(parts.body),
@@ -572,10 +572,10 @@ async function build() {
 	}, cacherFile);
 	
 	router.addRule(key => {
-		var file = key.replace(/^build/, '').slice(1);
-		return minimatch(key, 'build/posts/**/*.md') && fs.existsSync(file)
+		var file = key.replace(/^build/, '').replace(/[.]html$/, '.md').slice(1);
+		return minimatch(key, 'build/posts/**/*.html') && fs.existsSync(file)
 			&& fs.statSync(file).isFile();
-	}, key => formatPost(key, ejsData, 'post.html'));
+	}, key => formatPost(key, ejsData, 'post.html'), cacherFile);
 	
 	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html')
 			&& isInt(path.basename(key, '.html').replace(/^paginate/, '')),
