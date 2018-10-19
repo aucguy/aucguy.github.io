@@ -11,7 +11,7 @@
 <% } %>
 
 <% function head(__append) { %>
-	<meta property="self:totalPages" content="<%- lib.readConfig('build/paginate.json').totalPages%>">
+	<meta property="self:totalPages" content="<%- lib.generate('$postData').totalPaginates %>">
 <% } %>
 
 <%- lib.include('theme.html', { title: args.title, midsection, head }) %>

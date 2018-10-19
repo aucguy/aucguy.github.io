@@ -1,7 +1,7 @@
 <% function content(__append) {
-	var posts = lib.getPosts();
+	var postData = lib.generate('$postData');
 	var output = ['#Posts\n\n'];
-	for(var post of posts) {
+	for(var post of postData.posts) {
 		var path = post.path.replace(/^build/, '');
 		output.push(`* [${post.title} - ${lib.date(post.date)}](${path})\n`);
 	} %>

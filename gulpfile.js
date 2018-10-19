@@ -311,7 +311,9 @@ async function readSite(router) {
 		readConfig: function(file) {
 			return JSON.parse(fs.readFileSync(file).toString());
 		},
-		getPosts
+		generate: function(key) {
+			return router.generate(key);
+		},
 	}
 	
 	return {
@@ -392,34 +394,6 @@ function formatPost(key, ejsData, postTemplatePath) {
 	}, ejsData);
 	var template = compileTemplate(postTemplatePath);
 	return template(data);
-}
-
-function getPosts() {
-	var postData = JSON.parse(fs.readFileSync(POST_DATA_PATH));
-	var files = glob.sync(path.join(POSTS_PATH, '**/*.html')).map(i => {
-		return {
-			path: i,
-			date: postData[path.basename(i, '.html')].date,
-			title: postData[path.basename(i, '.html')].title
-		};
-	});
-	files.sort(function(a, b) {
-		var partsA = a.date.split('-').map(Number);
-		var partsB = b.date.split('-').map(Number);
-		for(var i = 0; i < 5; i++) {
-			if(partsA[i] === undefined || partsB[i] === undefined) {
-				break;
-			}
-			if(partsA[i] < partsB[i]) {
-				return -1;
-			} else if(partsA[i] > partsB[i]) {
-				return 1;
-			}
-		}
-		throw(`ambigious time order for ${a} and ${b}`);
-	});
-	files.reverse(); //so its newest to oldest
-	return files;
 }
 
 function createPaginateType(config, standalone) {
