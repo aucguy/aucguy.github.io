@@ -350,7 +350,7 @@ function splitFrontMatter(str) {
 	};
 }
 
-function extractPostFrontmatter() {
+function extractPostFrontmatter(site) {
 	var posts = [];
 	for(var file of glob.sync('posts/**/*.md')) {
 		var content = fs.readFileSync(file, { encoding: 'utf-8' });
@@ -378,8 +378,9 @@ function extractPostFrontmatter() {
 	});
 	posts.reverse(); //so its newest to oldest
 	return {
-		posts
-	}
+		posts,
+		totalPaginates: Math.ceil(posts.length / site.paginate.postsPerPage)
+	};
 }
 
 function formatPost(key, ejsData, postTemplatePath) {
@@ -443,18 +444,26 @@ async function writePaginate(template, data, i) {
 	await writeFilePress(pathname, contents);
 }
 
-function generatePaginate(key, ejsData, site, router) {
+function generatePaginate(key, ejsData, site, router, isEmbedded) {
 	var config = site.paginate;
 	if(!config) {
 		throw(new Error('paginate config not found'));
 	}
 	var postData = router.generate('$postData');
-	var totalPages = postData.posts.length;
-	
-	var i = parseInt(path.basename(key, '.html').replace(/^paginate/, ''));
-	
+	var totalPages = postData.totalPaginates;
+		
 	var embeddedTemplate = createPaginateType(config.embedded, false);
 	var standaloneTemplate = createPaginateType(config.standalone, true);
+	
+	var prefix, template;
+	if(isEmbedded) {
+		prefix = /^paginate/;
+		template = embeddedTemplate
+	} else {
+		prefix = /^standalonePaginate/;
+		template = standaloneTemplate;
+	}
+	var i = parseInt(path.basename(key, '.html').replace(prefix, ''));
 	
 	var data = Object.assign({
 		paginator: {
@@ -465,7 +474,8 @@ function generatePaginate(key, ejsData, site, router) {
 			totalPages
 		}
 	}, ejsData);
-	return embeddedTemplate.template(data);
+	
+	return template.template(data);
 }
 
 async function createRepo(data, oldSiteData) {
@@ -557,12 +567,16 @@ async function build() {
 	}
 	var newSiteData = {};
 	
-	
 	await del('public/**/*');
 	
 	router.addRule(matchEquals('$main'), () => {
 		for(var file of glob.sync('src/**/*', { nodir: true })) {
 			router.generate(file.replace(/^src/, 'public'));
+		}
+		var postData = router.generate('$postData');
+		for(var i=0; i<postData.totalPaginates; i++) {
+			router.generate(`public/paginates/paginate${i}.html`);
+			router.generate(`public/paginates/standalonePaginate${i}.html`);
 		}
 	});
 	
@@ -591,9 +605,13 @@ async function build() {
 	
 	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html')
 			&& isInt(path.basename(key, '.html').replace(/^paginate/, '')),
-			key => generatePaginate(key, ejsData, site, router), cacherFile);
+			key => generatePaginate(key, ejsData, site, router, true), cacherFile);
 	
-	router.addRule(key => matchEquals('$postData'), extractPostFrontmatter, cacherMemory);
+	router.addRule(key => minimatch(key, 'public/paginates/standalonePaginate*.html')
+			&& isInt(path.basename(key, '.html').replace(/^standalonePaginate/, '')),
+			key => generatePaginate(key, ejsData, site, router, false), cacherFile);
+	
+	router.addRule(key => matchEquals('$postData'), key => extractPostFrontmatter(site), cacherMemory);
 	
 	router.generate('$main');
 	
