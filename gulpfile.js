@@ -25,6 +25,7 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 const SITE_DATA_PATH = 'build/siteData.json';
 const POST_DATA_PATH = 'build/postData.json';
 const POSTS_PATH = 'build/posts';
+const OUTPUT_BUILD_DATA = 'build/outputBuild.json';
 
 const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
 
@@ -472,11 +473,11 @@ function needsRebuild(repo, modified, hash) {
 	return modified > repo.lastModified || hash !== repo.contentHash;
 }
 
-async function outputBuild(outputBuild, oldSiteData) {
-	var newSiteData = {};
+async function outputBuild(config, oldData) {
+	var newData = {};
 	var promises = [];
-	for(var repoData of outputBuild) {
-		var repo = await createRepo(repoData, oldSiteData);
+	for(var repoData of config) {
+		var repo = await createRepo(repoData, oldData);
 		var modified = await lastModified(repo.files);
 		var hash = contentHash(repo.files);
 		
@@ -492,7 +493,7 @@ async function outputBuild(outputBuild, oldSiteData) {
 			modified = await lastModified(files);
 			hash = contentHash(files);
 		}
-		newSiteData[repo.repoDir] = {
+		newData[repo.repoDir] = {
 			lastModified: modified,
 			contentHash: hash
 		};
@@ -500,7 +501,7 @@ async function outputBuild(outputBuild, oldSiteData) {
 			.pipe(gulp.dest(repo.outputDir))));
 	}
 	await Promise.all(promises);
-	return newSiteData;
+	return newData;
 }
 
 function formatStandalonePost(key, ejsData, router, templatePath) {
@@ -520,14 +521,6 @@ async function build() {
 	var router = createRouter();
 	var ejsData = await readSite(router);
 	var site = ejsData.site;
-		
-	var oldSiteData;
-	if(await exists(SITE_DATA_PATH)) {
-		oldSiteData = JSON.parse(await readFile(SITE_DATA_PATH));
-	} else {
-		oldSiteData = {};
-	}
-	var newSiteData = {};
 	
 	await del('public/**/*');
 	
@@ -586,6 +579,13 @@ async function build() {
 	
 	router.generate('$main');
 	
+	var oldOutputBuild;
+	if(await exists(OUTPUT_BUILD_DATA)) {
+		oldOutputBuild = JSON.parse(await readFile(OUTPUT_BUILD_DATA));
+	} else {
+		oldOutputBuild = {};
+	}
+		
 	//gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js', '!src/style.css'])
 	//	.pipe(gulpPress())
 	//	.pipe(gulp.dest('public'))
@@ -616,7 +616,9 @@ async function build() {
 	//if(site.outputBuild) {
 	//	newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
 	//}
-	await writeFileMkdirs(SITE_DATA_PATH, JSON.stringify(newSiteData));
+	if(site.outputBuild) {
+		await writeFileMkdirs(OUTPUT_BUILD_DATA, JSON.stringify(await outputBuild(site.outputBuild, oldOutputBuild)));
+	}
 	console.log('finished build');
 }
 
