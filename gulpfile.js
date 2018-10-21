@@ -2,15 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
 const crypto = require('crypto');
-const gulp = require('gulp');
 const uglify = require('uglify-js');
-const gulp_uglify = require('gulp-uglify');
-const extReplace = require('gulp-ext-replace');
-const gulp_ejs = require('gulp-ejs');
 const ejs = require('ejs');
 const markdown = require('markdown').markdown;
 const through2 = require('through2');
-const Vinyl = require('vinyl');
 const glob = require('glob');
 const del = require('del');
 const htmlMinify = require('html-minifier').minify;
@@ -164,14 +159,6 @@ function svgoPromise(contents, config) {
 	});
 }
 
-function gulpPromise(stream) {
-	return new Promise((resolve, reject) => {
-		stream.on('end', () => {
-			resolve();
-		});
-	});
-}
-
 async function lastModified(files) {
 	var lastModified = 0;
 	for(var file of files) {
@@ -226,29 +213,6 @@ async function press(pathname, contents, svgoConfig) {
 		return uglifycss.processString(contents, {});
 	}
 	return contents;
-}
-
-function gulpPress(svgoConfig) {
-	return through2.obj(function(file, enc, callback) {
-		if(file.isDirectory()) {
-			this.push(file);
-			callback();
-		} else if(COMPRESSED_FILES.includes(path.extname(file.path))) {
-			press(file.path, file.contents.toString(enc), svgoConfig)
-			  		.then(contents => {
-				this.push(new Vinyl({
-					cwd: file.cwd,
-					base: file.base,
-					path: file.path,
-					contents: Buffer.from(contents, enc)
-				}));
-				callback();
-			});
-		} else {
-			this.push(file);
-			callback();
-		}
-	});
 }
 
 async function writeFilePress(pathname, contents) {
@@ -465,7 +429,8 @@ async function createRepo(data, oldSiteData) {
 	var obj = {
 		repoDir: data.dir,
 		repoDirGlob: path.join(data.dir, '**/*'),
-		buildDir: path.join(data.dir, data.build, '**/*'),
+		buildDir: path.join(data.dir, data.build),
+		buildDirGlob: path.join(data.dir, data.build, '**/*'),
 		outputDir: path.join('public', data.output),
 		cacheDir: path.join('build/repoCache', data.dir),
 		cacheDirGlob: path.join('build/repoCache', data.dir, '**/*'),
@@ -476,7 +441,7 @@ async function createRepo(data, oldSiteData) {
 		excludes: null,
 		files: null
 	};
-	obj.excludes = [obj.buildDir, path.join(data.dir, data.exclude)];
+	obj.excludes = [obj.buildDirGlob, path.join(data.dir, data.exclude)];
 	obj.files = await globFiles(obj.repoDirGlob, obj.excludes);
 	return obj;
 }
@@ -489,7 +454,7 @@ async function outputBuild(config, oldData) {
 	var newData = {};
 	var promises = [];
 	for(var repoData of config) {
-		var repo = await createRepo(repoData, oldData);
+		let repo = await createRepo(repoData, oldData);
 		var modified = await lastModified(repo.files);
 		var hash = contentHash(repo.files);
 		
@@ -498,9 +463,10 @@ async function outputBuild(config, oldData) {
 			await exec(repo.cmd, {
 				cwd: repo.repoDir
 			});
-			await gulp.src(repo.buildDir)
-					.pipe(gulpPress(repo.svgoConfig))
-					.pipe(gulp.dest(repo.cacheDir));
+			for(var file of await globPromise(repo.buildDirGlob, { nodir: true })) {
+				var outFile = path.join(repo.cacheDir, path.relative(repo.buildDir, file));
+				await writeFileMkdirs(outFile, await readFile(file));
+			}
 			var files = await globFiles(repo.repoDirGlob, repo.excludes);
 			modified = await lastModified(files);
 			hash = contentHash(files);
@@ -509,8 +475,12 @@ async function outputBuild(config, oldData) {
 			lastModified: modified,
 			contentHash: hash
 		};
-		promises.push(gulpPromise(gulp.src(repo.cacheDirGlob)
-			.pipe(gulp.dest(repo.outputDir))));
+		promises.push((async function() {
+			for(var file of await globPromise(repo.cacheDirGlob, { nodir: true })) {
+				var outFile = path.join(repo.outputDir, path.relative(repo.cacheDir, file));
+				await writeFileMkdirs(outFile, await readFile(file));
+			}
+		})());
 	}
 	await Promise.all(promises);
 	return newData;
@@ -537,7 +507,6 @@ async function build() {
 	await del('public/**/*');
 	
 	router.addRule(key => key === '$main', async () => {
-		debugger;
 		for(var file of glob.sync('src/**/*', { nodir: true })) {
 			await router.generate(file.replace(/^src/, 'public'));
 		}
@@ -605,9 +574,4 @@ async function build() {
 	console.log('finished build');
 }
 
-gulp.task('build', () => {
-	build().catch((err) => {
-		throw(err);
-		process.exit(1); //not the best solution
-	});
-});
+build();
