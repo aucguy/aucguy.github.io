@@ -1,7 +1,7 @@
-<% function midsection(__append) { %>
+<% async function midsection(__append) { %>
 <div class="standalone">
-	<% args.content(__append) %>
+	<% await lib.maybeResolve(args.content(__append)) %>
 </div>
 <% } %>
 
-<%- lib.include('theme.html', { midsection, title: args.title }) %>
+<%- await lib.include('theme.html', { midsection, title: args.title }) %>

@@ -1,7 +1,7 @@
 <%# page layout for feed pages. These view posts %>
-<% var midsection = function(__append) { %>
+<% async function midsection(__append) { %>
 	<div id="posts">
-		<%- lib.includePage('public/paginates/paginate0.html') %>
+		<%- await lib.includePage('public/paginates/paginate0.html') %>
 	</div>
 	<p></p>
 	<div id="loadButton" class="loadButton">
@@ -14,4 +14,4 @@
 	<meta property="self:totalPages" content="<%- lib.generate('$postData').totalPaginates %>">
 <% } %>
 
-<%- lib.include('theme.html', { title: args.title, midsection, head }) %>
+<%- await lib.include('theme.html', { title: args.title, midsection, head }) %>

@@ -1,5 +1,5 @@
-<% function content(__append) {
-	var postData = lib.generate('$postData');
+<% async function content(__append) {
+	var postData = await lib.generate('$postData');
 	var output = ['#Posts\n\n'];
 	for(var post of postData.posts) {
 		var path = post.path.replace(/^build/, '');
@@ -8,4 +8,4 @@
 	<%- lib.markdown(output.join('')); %>
 <% } %>
 
-<%- lib.include('content.html', { content, title: 'Posts' }) %>
+<%- await lib.include('content.html', { content, title: 'Posts' }) %>

@@ -29,6 +29,10 @@ const OUTPUT_BUILD_DATA = 'build/outputBuild.json';
 
 const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
 
+async function maybeResolve(x) {
+	return x instanceof Promise ? await x : x;
+}
+
 function createRouter() {
 	var rules = [];
 	var cache = new Map();
@@ -41,7 +45,7 @@ function createRouter() {
 				cacher: cacher || cacherNone
 			});
 		},
-		generate: function(key) {
+		generate: async function(key) {
 			if(cache.has(key)) {
 				return cache.get(key);
 			}
@@ -53,8 +57,8 @@ function createRouter() {
 				console.warn(`rule for ${key} not found`);
 				return null;
 			}
-			var value = rule.generator(key);
-			rule.cacher(self, key, value);
+			var value = await maybeResolve(rule.generator(key));
+			await maybeResolve(rule.cacher(self, key, value));
 			return value;
 		},
 		getMemoryCache: function() {
@@ -75,6 +79,11 @@ function cacherMemory(router, key, value) {
 function cacherFile(router, key, value) {
 	mkdirsSync(path.dirname(key));
 	fs.writeFileSync(key, value);
+}
+
+async function cacherPress(router, key, value) {
+	mkdirsSync(path.dirname(key));
+	fs.writeFileSync(key, await press(key, value.toString()));
 }
 
 function isInt(x) {
@@ -182,9 +191,9 @@ async function writeFileMkdirs(pathname, contents) {
 async function press(pathname, contents, svgoConfig) {
 	var ext = path.extname(pathname);
 	if(ext === '.js') {
-		contents = (await babel.transformAsync(contents, {
+		contents = babel.transformSync(contents, {
 			plugins: ['@babel/plugin-transform-block-scoping']
-		})).code;
+		}).code;
 		result = uglify.minify(contents);
 		if(result.error) {
 			console.error(`uglify: error ${pathname}`)
@@ -284,20 +293,22 @@ async function readSite(router) {
 	var site = JSON.parse(data.toString());
 	
 	var lib = {
-		includePage: function(file, args, noPreprocess) {
-			var data = router.generate(file).toString();
+		includePage: async function(file, args, noPreprocess) {
+			var data = (await router.generate(file)).toString();
 			if(noPreprocess) {
 				return data;
 			} else {
-				return ejs.render(data, {
+				return await ejs.render(data, {
 					lib,
 					args,
 					site
+				}, {
+					async: true
 				});
 			}
 		},
-		include: function(file, args) {
-			return lib.includePage(path.join('includes', file), args);
+		include: async function(file, args) {
+			return await lib.includePage(path.join('includes', file), args);
 		},
 		date: function(date) {
 			return timeToStr(strToTime(date));
@@ -308,10 +319,11 @@ async function readSite(router) {
 		readConfig: function(file) {
 			return JSON.parse(fs.readFileSync(file).toString());
 		},
-		generate: function(key) {
-			return router.generate(key);
+		generate: async function(key) {
+			return await router.generate(key);
 		},
-	}
+		maybeResolve
+	};
 	
 	return {
 		lib,
@@ -322,7 +334,7 @@ async function readSite(router) {
 
 function compileTemplate(pathname) {
 	var data = fs.readFileSync(path.join('includes', pathname));
-	return ejs.compile(data.toString());
+	return ejs.compile(data.toString(), { async: true });
 }
 
 function splitFrontMatter(str) {
@@ -415,12 +427,12 @@ async function writePaginate(template, data, i) {
 	await writeFilePress(pathname, contents);
 }
 
-function generatePaginate(key, ejsData, site, router, isEmbedded) {
+async function generatePaginate(key, ejsData, site, router, isEmbedded) {
 	var config = site.paginate;
 	if(!config) {
 		throw(new Error('paginate config not found'));
 	}
-	var postData = router.generate('$postData');
+	var postData = await router.generate('$postData');
 	var totalPages = postData.totalPaginates;
 		
 	var embeddedTemplate = createPaginateType(config.embedded, false);
@@ -446,7 +458,7 @@ function generatePaginate(key, ejsData, site, router, isEmbedded) {
 		}
 	}, ejsData);
 	
-	return template.template(data);
+	return await template.template(data);
 }
 
 async function createRepo(data, oldSiteData) {
@@ -504,13 +516,13 @@ async function outputBuild(config, oldData) {
 	return newData;
 }
 
-function formatStandalonePost(key, ejsData, router, templatePath) {
+async function formatStandalonePost(key, ejsData, router, templatePath) {
 	var template = compileTemplate(templatePath);
-	var postData = router.generate('$postData');
+	var postData = await router.generate('$postData');
 	var file = key.replace(/^public/, 'build');
 	var data = Object.assign({
 		post: {
-			contents: router.generate(file),
+			contents: await router.generate(file),
 			title: postData.posts.find(post => path.normalize(file) === path.normalize(post.path)).title
 		}
 	}, ejsData);
@@ -524,17 +536,18 @@ async function build() {
 	
 	await del('public/**/*');
 	
-	router.addRule(key => key === '$main', () => {
+	router.addRule(key => key === '$main', async () => {
+		debugger;
 		for(var file of glob.sync('src/**/*', { nodir: true })) {
-			router.generate(file.replace(/^src/, 'public'));
+			await router.generate(file.replace(/^src/, 'public'));
 		}
-		var postData = router.generate('$postData');
+		var postData = await router.generate('$postData');
 		for(var post of postData.posts) {
-			router.generate(post.path.replace(/^build/, 'public'));
+			await router.generate(post.path.replace(/^build/, 'public'));
 		}
 		for(var i=0; i<postData.totalPaginates; i++) {
-			router.generate(`public/paginates/paginate${i}.html`);
-			router.generate(`public/paginates/standalonePaginate${i}.html`);
+			await router.generate(`public/paginates/paginate${i}.html`);
+			await router.generate(`public/paginates/standalonePaginate${i}.html`);
 		}
 	});
 	
@@ -544,16 +557,16 @@ async function build() {
 		var file = key.replace(/^public/, 'src');
 		return minimatch(key, 'public/**/*') && fs.existsSync(file)
 			&& fs.statSync(file).isFile();
-	}, key => {
+	}, async key => {
 		var file = key.replace(/^public/, 'src');
 		var contents = fs.readFileSync(file);
 		if(path.extname(key) === '.html' 
 			|| path.normalize(key) === path.normalize('public/script.js')
 			|| path.normalize(key) === path.normalize('public/style.css')) {
-			contents = ejs.render(contents.toString(), ejsData);
+			contents = await ejs.render(contents.toString(), ejsData, { async: true });
 		}
 		return contents;
-	}, cacherFile);
+	}, cacherPress);
 	
 	router.addRule(key => {
 		var file = key.replace(/^build/, '').replace(/[.]html$/, '.md').slice(1);
@@ -565,19 +578,19 @@ async function build() {
 		var file = key.replace(/^public/, '').replace(/[.]html$/, '.md').slice(1);
 		return minimatch(key, 'public/posts/**/*.html') && fs.existsSync(file)
 			&& fs.statSync(file).isFile();
-	}, key => formatStandalonePost(key, ejsData, router, 'standalonePost.html'), cacherFile);
+	}, async key => await formatStandalonePost(key, ejsData, router, 'standalonePost.html'), cacherPress);
 	
 	router.addRule(key => minimatch(key, 'public/paginates/paginate*.html')
 			&& isInt(path.basename(key, '.html').replace(/^paginate/, '')),
-			key => generatePaginate(key, ejsData, site, router, true), cacherFile);
+			async key => await generatePaginate(key, ejsData, site, router, true), cacherPress);
 	
 	router.addRule(key => minimatch(key, 'public/paginates/standalonePaginate*.html')
 			&& isInt(path.basename(key, '.html').replace(/^standalonePaginate/, '')),
-			key => generatePaginate(key, ejsData, site, router, false), cacherFile);
+			async key => await generatePaginate(key, ejsData, site, router, false), cacherPress);
 	
 	router.addRule(key => key === '$postData', key => extractPostFrontmatter(site), cacherMemory);
 	
-	router.generate('$main');
+	await router.generate('$main');
 	
 	var oldOutputBuild;
 	if(await exists(OUTPUT_BUILD_DATA)) {

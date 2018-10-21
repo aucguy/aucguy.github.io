@@ -1,6 +1,6 @@
 <div>
 	<% for(var post of paginator.posts) { %>
-		<%- lib.includePage(post.path) %>
+		<%- await lib.includePage(post.path) %>
 	<% } %>
     
 	<% if(paginator.nextStandalonePage) { %>
