@@ -598,37 +598,7 @@ async function build() {
 	} else {
 		oldOutputBuild = {};
 	}
-		
-	//gulp.src(['src/**/*', '!src/**/*.html', '!src/script.js', '!src/style.css'])
-	//	.pipe(gulpPress())
-	//	.pipe(gulp.dest('public'))
-		
-	//gulp.src(['src/script.js', 'src/style.css'])
-	//	.pipe(gulp_ejs(ejsData))
-	//	.pipe(gulpPress())
-	//	.pipe(gulp.dest('public'));
 	
-	//await extractPostFrontmatter('posts/**/*.md', 'posts');
-	//await gulpPromise(gulp.src('posts/**/*.md')
-	//	.pipe(await formatPost(ejsData, 'post.html'))
-	//	.pipe(extReplace('.html'))
-	//	.pipe(gulp.dest(POSTS_PATH)));
-	
-	//await gulpPromise(gulp.src(path.join(POSTS_PATH, '**/*.html'))
-	//	.pipe(await formatStandalonePost(ejsData, 'standalonePost.html'))
-	//	.pipe(extReplace('.html'))
-	//	.pipe(gulpPress())
-	//	.pipe(gulp.dest('public/posts')));
-	
-	//await generatePaginates(ejsData);
-	//gulp.src('src/**/*.html')
-	//	.pipe(gulp_ejs(ejsData))
-	//	.pipe(gulpPress())
-	//	.pipe(gulp.dest('public'));
-		
-	//if(site.outputBuild) {
-	//	newSiteData.outputBuild = await outputBuild(site.outputBuild, oldSiteData.outputBuild || {});
-	//}
 	if(site.outputBuild) {
 		await writeFileMkdirs(OUTPUT_BUILD_DATA, JSON.stringify(await outputBuild(site.outputBuild, oldOutputBuild)));
 	}
