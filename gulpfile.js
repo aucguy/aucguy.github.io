@@ -16,13 +16,7 @@ const minimatch = require('minimatch');
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 	'July', 'August', 'September', 'October', 'November', 'December'];
-
-const SITE_DATA_PATH = 'build/siteData.json';
-const POST_DATA_PATH = 'build/postData.json';
-const POSTS_PATH = 'build/posts';
 const OUTPUT_BUILD_DATA = 'build/outputBuild.json';
-
-const COMPRESSED_FILES = ['.js', '.html', '.svg', '.css'];
 
 async function maybeResolve(x) {
 	return x instanceof Promise ? await x : x;
