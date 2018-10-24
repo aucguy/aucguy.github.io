@@ -95,14 +95,14 @@ function toFromRule(fromDir, fromExt, toDir, toExt, generator, cacher) {
 	};
 }
 
-function paginateRule(pathformat, ejsData, site, isEmbedded, cacher) {
+function paginateRule(pathformat, site, isEmbedded, cacher) {
 	var re = new minimatch.Minimatch(pathformat.replace('{i}', '<i>')).makeRe();
 	re = re.source.replace('<i>', '([0-9]+)');
 	return async (router, key) => {
 		var matches = new RegExp(re).exec(key);
 		return await doRule(router, key,
 			() => matches !== null,
-			async () => await generatePaginate(key, ejsData, site, router, 
+			async () => await generatePaginate(key, site, 
 				isEmbedded, parseInt(matches[1])), cacher);
 	};
 }
@@ -299,9 +299,9 @@ function timeToStr(time) {
 	return str;
 }
 
-async function readSite(router) {
-	var data = await readFile('config.json');
-	var site = JSON.parse(data.toString());
+async function createSite() {
+	var config = JSON.parse(await readFile('config.json'));
+	var router = createRouter();
 	
 	var lib = {
 		includePage: async function(file, args, noPreprocess) {
@@ -312,7 +312,7 @@ async function readSite(router) {
 				return await ejs.render(data, {
 					lib,
 					args,
-					site
+					site: config
 				}, {
 					async: true
 				});
@@ -333,13 +333,18 @@ async function readSite(router) {
 		generate: async function(key) {
 			return await router.generate(key);
 		},
-		maybeResolve
+		maybeResolve,
+		args: null
 	};
 	
 	return {
-		lib,
-		site,
-		args: null
+		ejsData: {
+			lib,
+			args: null,
+			site: config
+		},
+		config,
+		router
 	};
 }
 
@@ -401,17 +406,17 @@ function extractPostFrontmatter(site) {
 	posts.reverse(); //so its newest to oldest
 	return {
 		posts,
-		totalPaginates: Math.ceil(posts.length / site.paginate.postsPerPage)
+		totalPaginates: Math.ceil(posts.length / site.config.paginate.postsPerPage)
 	};
 }
 
-function formatPost(key, file, ejsData, postTemplatePath) {
+function formatPost(key, file, site, postTemplatePath) {
 	var content = fs.readFileSync(file);
 	var parts = splitFrontMatter(content.toString());
 	var data = Object.assign({
 		content: markdown.toHTML(parts.body),
 		frontMatter: parts.frontMatter
-	}, ejsData);
+	}, site.ejsData);
 	var template = compileTemplate(postTemplatePath);
 	return template(data);
 }
@@ -438,12 +443,12 @@ async function writePaginate(template, data, i) {
 	await writeFilePress(pathname, contents);
 }
 
-async function generatePaginate(key, ejsData, site, router, isEmbedded, i) {
-	var config = site.paginate;
+async function generatePaginate(key, site, isEmbedded, i) {
+	var config = site.config.paginate;
 	if(!config) {
 		throw(new Error('paginate config not found'));
 	}
-	var postData = await router.generate('$postData');
+	var postData = await site.router.generate('$postData');
 	var totalPages = postData.totalPaginates;
 		
 	var embeddedTemplate = createPaginateType(config.embedded, false);
@@ -464,7 +469,7 @@ async function generatePaginate(key, ejsData, site, router, isEmbedded, i) {
 			page: i,
 			totalPages
 		}
-	}, ejsData);
+	}, site.ejsData);
 	
 	return await template.template(data);
 }
@@ -494,7 +499,11 @@ function needsRebuild(repo, modified, hash) {
 	return modified > repo.lastModified || hash !== repo.contentHash;
 }
 
-async function outputBuild(config, oldData) {
+async function outputBuild(site, oldData) {
+	var config = site.config.outputBuild;
+	if(!config) {
+		return;
+	}
 	var newData = {};
 	var promises = [];
 	for(var repoData of config) {
@@ -530,63 +539,61 @@ async function outputBuild(config, oldData) {
 	return newData;
 }
 
-async function formatStandalonePost(key, ejsData, router, templatePath) {
+async function formatStandalonePost(key, site, templatePath) {
 	var template = compileTemplate(templatePath);
-	var postData = await router.generate('$postData');
+	var postData = await site.router.generate('$postData');
 	var file = path.join('build/posts', path.relative('public/posts', key));
 	var data = Object.assign({
 		post: {
-			contents: await router.generate(file),
+			contents: await site.router.generate(file),
 			title: postData.posts.find(post => path.normalize(file) === path.normalize(post.path)).title
 		}
-	}, ejsData);
+	}, site.ejsData);
 	return template(data);
 }
 
 async function build() {
-	var router = createRouter();
-	var ejsData = await readSite(router);
-	var site = ejsData.site;
+	var site = await createSite();
 	
 	await del('public/**/*');
 	
-	router.addRule(symbolRule('$main', async () => {
+	site.router.addRule(symbolRule('$main', async () => {
 		for(var file of glob.sync('src/**/*', { nodir: true })) {
-			await router.generate(file.replace(/^src/, 'public'));
+			await site.router.generate(file.replace(/^src/, 'public'));
 		}
-		var postData = await router.generate('$postData');
+		var postData = await site.router.generate('$postData');
 		for(var post of postData.posts) {
-			await router.generate(post.path.replace(/^build/, 'public'));
+			await site.router.generate(post.path.replace(/^build/, 'public'));
 		}
 		for(var i=0; i<postData.totalPaginates; i++) {
-			await router.generate(`public/paginates/paginate${i}.html`);
-			await router.generate(`public/paginates/standalonePaginate${i}.html`);
+			await site.router.generate(`public/paginates/paginate${i}.html`);
+			await site.router.generate(`public/paginates/standalonePaginate${i}.html`);
 		}
 	}));
 	
-	router.addRule(createRule(key => minimatch(key, 'includes/**/*'), key => fs.readFileSync(key).toString()));
+	site.router.addRule(createRule(key => minimatch(key, 'includes/**/*'), key => fs.readFileSync(key).toString()));
 	
-	router.addRule(toFromRule('src', null, 'public', null, async (key, file) => {
+	site.router.addRule(toFromRule('src', null, 'public', null, async (key, file) => {
 		var contents = fs.readFileSync(file);
 		if(path.extname(key) === '.html' 
 			|| path.normalize(key) === path.normalize('public/script.js')
 			|| path.normalize(key) === path.normalize('public/style.css')) {
-			contents = await ejs.render(contents.toString(), ejsData, { async: true });
+			contents = await ejs.render(contents.toString(), site.ejsData, { async: true });
 		}
 		return contents;
 	}, cacherPress));
 	
-	router.addRule(toFromRule('posts', 'md', 'build/posts', 'html',
-		(key, file) => formatPost(key, file, ejsData, 'post.html'), cacherFile));
+	site.router.addRule(toFromRule('posts', 'md', 'build/posts', 'html',
+		(key, file) => formatPost(key, file, site, 'post.html'), cacherFile));
 	
-	router.addRule(toFromRule('posts', 'md', 'public/posts', 'html',
-		(key, file) => formatStandalonePost(key, ejsData, router, 'standalonePost.html'), cacherPress));
+	site.router.addRule(toFromRule('posts', 'md', 'public/posts', 'html',
+		(key, file) => formatStandalonePost(key, site, 'standalonePost.html'), cacherPress));
 	
-	router.addRule(paginateRule('public/paginates/paginate{i}.html', ejsData, site, true, cacherPress));
-	router.addRule(paginateRule('public/paginates/standalonePaginate{i}.html', ejsData, site, false, cacherPress));
-	router.addRule(symbolRule('$postData', key => extractPostFrontmatter(site), cacherMemory));
+	site.router.addRule(paginateRule('public/paginates/paginate{i}.html', site, true, cacherPress));
+	site.router.addRule(paginateRule('public/paginates/standalonePaginate{i}.html', site, false, cacherPress));
+	site.router.addRule(symbolRule('$postData', key => extractPostFrontmatter(site), cacherMemory));
 	
-	await router.generate('$main');
+	await site.router.generate('$main');
 	
 	var oldOutputBuild;
 	if(await exists(OUTPUT_BUILD_DATA)) {
@@ -595,9 +602,8 @@ async function build() {
 		oldOutputBuild = {};
 	}
 	
-	if(site.outputBuild) {
-		await writeFileMkdirs(OUTPUT_BUILD_DATA, JSON.stringify(await outputBuild(site.outputBuild, oldOutputBuild)));
-	}
+	await writeFileMkdirs(OUTPUT_BUILD_DATA, JSON.stringify(await outputBuild(site, oldOutputBuild)));
+	
 	console.log('finished build');
 }
 
