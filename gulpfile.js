@@ -88,8 +88,16 @@ function toFromRule(fromDir, fromExt, toDir, toExt, generator, cacher) {
 	};
 }
 
-function paginateRule(pathformat, site, isEmbedded, cacher) {
-	var re = new minimatch.Minimatch(pathformat.replace('{i}', '<i>')).makeRe();
+function paginateRule(site, isEmbedded, cacher) {
+	var config;
+	if(isEmbedded) {
+		config = site.config.paginate.embedded;
+	} else {
+		config = site.config.paginate.standalone;
+	}
+	pathformat = path.join('public', config.output);
+	
+	var re = new minimatch.Minimatch(pathformat.replace('${i}', '<i>')).makeRe();
 	re = re.source.replace('<i>', '([0-9]+)');
 	return async (router, key) => {
 		var matches = new RegExp(re).exec(key);
@@ -582,8 +590,8 @@ async function build() {
 	site.router.addRule(toFromRule('posts', 'md', 'public/posts', 'html',
 		(key, file) => formatStandalonePost(key, site, 'standalonePost.html'), cacherPress));
 	
-	site.router.addRule(paginateRule('public/paginates/paginate{i}.html', site, true, cacherPress));
-	site.router.addRule(paginateRule('public/paginates/standalonePaginate{i}.html', site, false, cacherPress));
+	site.router.addRule(paginateRule(site, true, cacherPress));
+	site.router.addRule(paginateRule(site, false, cacherPress));
 	site.router.addRule(symbolRule('$postData', key => extractPostFrontmatter(site), cacherMemory));
 	
 	await site.router.generate('$main');
