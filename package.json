@@ -15,7 +15,6 @@
     "http-serve": "^1.0.1",
     "markdown": "^0.5.0",
     "svgo": "^0.7.2",
-    "through2": "^2.0.3",
     "uglify-js": "^3.4.8",
     "uglifycss": "0.0.29"
   },

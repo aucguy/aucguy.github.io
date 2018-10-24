@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const uglify = require('uglify-js');
 const ejs = require('ejs');
 const markdown = require('markdown').markdown;
-const through2 = require('through2');
 const glob = require('glob');
 const del = require('del');
 const htmlMinify = require('html-minifier').minify;
