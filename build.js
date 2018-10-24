@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
-const crypto = require('crypto');
 const uglify = require('uglify-js');
 const ejs = require('ejs');
 const markdown = require('markdown').markdown;
@@ -267,15 +266,6 @@ async function writeFilePress(pathname, contents) {
 	await writeFile(pathname, await press(pathname, contents));
 }
 
-function contentHash(files) {
-	var hash = crypto.createHash('sha256');
-	for(var file of files) {
-		hash.update(file);
-		hash.update(',');
-	}
-	return hash.digest('hex');
-}
-
 function strToTime(str) {
 	var parts = str.split('-');
 	if(parts.length !== 3 && parts.length !== 5) {
@@ -495,18 +485,11 @@ async function createRepo(data, oldData) {
 		cacheDirGlob: path.join('build/repoCache', data.dir, '**/*'),
 		cmd: data.cmd,
 		svgoConfig: data.svgo,
-		lastModified: oldData[data.dir] ? oldData[data.dir].lastModified : -1,
-		contentHash: oldData[data.dir] ? oldData[data.dir].contentHash : null,
+		lastHead: oldData[data.dir] ? oldData[data.dir].head : '~',
 		excludes: null,
 		files: null
 	};
-	obj.excludes = [obj.buildDirGlob, path.join(data.dir, data.exclude)];
-	obj.files = await globFiles(obj.repoDirGlob, obj.excludes);
 	return obj;
-}
-
-function needsRebuild(repo, modified, hash) {
-	return modified > repo.lastModified || hash !== repo.contentHash;
 }
 
 async function outputBuild(site, oldData) {
@@ -515,13 +498,15 @@ async function outputBuild(site, oldData) {
 		return;
 	}
 	var newData = {};
-	var promises = [];
-	for(var repoData of config) {
-		let repo = await createRepo(repoData, oldData);
-		var modified = await lastModified(repo.files);
-		var hash = contentHash(repo.files);
+	var allFiles = [];
+	await Promise.all(config.map(async (repoData) => {
+		var repo = await createRepo(repoData, oldData);
+		var head = await exec('git rev-parse HEAD', {
+			cwd: repo.repoDir
+		});
+		head = head.slice(0, head.length - 1);
 		
-		if(needsRebuild(repo, modified, hash)) {
+		if(repo.lastHead !== head) {
 			console.log('building ' + repo.repoDir);
 			await exec(repo.cmd, {
 				cwd: repo.repoDir
@@ -530,22 +515,16 @@ async function outputBuild(site, oldData) {
 				var outFile = path.join(repo.cacheDir, path.relative(repo.buildDir, file));
 				await writeFileMkdirs(outFile, await readFile(file));
 			}
-			var files = await globFiles(repo.repoDirGlob, repo.excludes);
-			modified = await lastModified(files);
-			hash = contentHash(files);
 		}
 		newData[repo.repoDir] = {
-			lastModified: modified,
-			contentHash: hash
+			head
 		};
-		promises.push((async function() {
-			for(var file of await globPromise(repo.cacheDirGlob, { nodir: true })) {
-				var outFile = path.join(repo.outputDir, path.relative(repo.cacheDir, file));
-				await writeFileMkdirs(outFile, await readFile(file));
-			}
-		})());
-	}
-	await Promise.all(promises);
+		for(var file of await globPromise(repo.cacheDirGlob, { nodir: true })) {
+			var outFile = path.join(repo.outputDir, path.relative(repo.cacheDir, file));
+			await writeFileMkdirs(outFile, await readFile(file));
+		}
+	}));
+	await writeFile('files.txt', allFiles.join('\n'));
 	return newData;
 }
 
@@ -563,6 +542,7 @@ async function formatStandalonePost(key, site, templatePath) {
 }
 
 async function build() {
+	var start = Date.now();
 	var site = await createSite();
 	
 	await del('public/**/*');
@@ -619,7 +599,7 @@ async function build() {
 	
 	await writeFileMkdirs(OUTPUT_BUILD_DATA, JSON.stringify(await outputBuild(site, oldOutputBuild)));
 	
-	console.log('finished build');
+	console.log(`finished build in ${(Date.now() - start) / 1000} s`);
 }
 
 build();
