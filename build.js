@@ -438,6 +438,14 @@ function nextPage(template, i, totalPages) {
 	}
 }
 
+function previousPage(template, i) {
+	if(i === 0) {
+		return null;
+	} else {
+		return template.path.replace('${i}', i - 1);
+	}
+}
+
 async function writePaginate(template, data, i) {
 	var contents = template.template(data);
 	var pathname = path.join('public', template.path.replace('${i}', i));
@@ -466,6 +474,7 @@ async function generatePaginate(key, site, isEmbedded, i) {
 		paginator: {
 			nextPage: nextPage(embeddedTemplate, i, totalPages),
 			nextStandalonePage: nextPage(standaloneTemplate, i, totalPages),
+			previousStandalonePage: previousPage(standaloneTemplate, i),
 			posts: postData.posts.slice(i * totalPages, (i + 1) * totalPages),
 			page: i,
 			totalPages

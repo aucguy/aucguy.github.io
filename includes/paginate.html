@@ -1,11 +1,24 @@
 <div>
+	<noscript>
+		<h2 class="titleText">Page <%- paginator.page + 1 %></h2>
+	</noscript>
 	<% for(var post of paginator.posts) { %>
 		<%- await lib.includePage(post.path) %>
 	<% } %>
     
-	<% if(paginator.nextStandalonePage) { %>
-		<noscript>
-			<a id="nextPage" href="<%- paginator.nextStandalonePage %>">Page <%- paginator.page + 2 %></a>
-		</noscript>
-	<% } %>
+    <noscript>
+		<% if(paginator.nextStandalonePage) { %>
+				<p></p>
+				<a class="loadButtonNoScript" href="<%- paginator.nextStandalonePage %>">
+					Next Page: <%- paginator.page + 2 %>
+				</a>
+		<% } %>
+		<% if(paginator.previousStandalonePage) { %>
+				<p></p>
+				<a class="loadButtonNoScript" href="<%- paginator.previousStandalonePage %>">
+					Previous Page: <%- paginator.page %>
+				</a>
+		<% } %>
+		<p></p>
+	</noscript>
 </div>
