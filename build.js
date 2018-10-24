@@ -98,9 +98,9 @@ function paginateRule(site, isEmbedded, cacher) {
 	pathformat = path.join('public', config.output);
 	
 	var re = new minimatch.Minimatch(pathformat.replace('${i}', '<i>')).makeRe();
-	re = re.source.replace('<i>', '([0-9]+)');
+	re = re.source.replace('<i>', '([0-9]+)').replace(new RegExp('\/', 'g'), path.sep);
 	return async (router, key) => {
-		var matches = new RegExp(re).exec(key);
+		var matches = new RegExp(re).exec(path.normalize(key));
 		return await doRule(router, key,
 			() => matches !== null,
 			async () => await generatePaginate(key, site, 
@@ -568,16 +568,21 @@ async function build() {
 	await del('public/**/*');
 	
 	site.router.addRule(symbolRule('$main', async () => {
-		for(var file of glob.sync('src/**/*', { nodir: true })) {
-			await site.router.generate(file.replace(/^src/, 'public'));
+		var file;
+		for(file of glob.sync('src/**/*', { nodir: true })) {
+			file = path.join('public', path.relative('src', file));
+			await site.router.generate(file);
 		}
 		var postData = await site.router.generate('$postData');
 		for(var post of postData.posts) {
-			await site.router.generate(post.path.replace(/^build/, 'public'));
+			file = path.join('public/posts', path.relative('build/posts', file));
+			await site.router.generate(file);
 		}
 		for(var i=0; i<postData.totalPaginates; i++) {
-			await site.router.generate(`public/paginates/paginate${i}.html`);
-			await site.router.generate(`public/paginates/standalonePaginate${i}.html`);
+			file = path.join('public', site.config.paginate.embedded.output.replace('${i}', i));
+			await site.router.generate(file);
+			file = path.join('public', site.config.paginate.standalone.output.replace('${i}', i));
+			await site.router.generate(file);
 		}
 	}));
 	
