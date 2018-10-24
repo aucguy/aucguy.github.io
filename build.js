@@ -378,7 +378,7 @@ function splitFrontMatter(str) {
 	};
 }
 
-function extractPostFrontmatter(site) {
+function extractPostData(site) {
 	var posts = [];
 	for(var file of glob.sync('posts/**/*.md')) {
 		var content = fs.readFileSync(file, { encoding: 'utf-8' });
@@ -484,7 +484,7 @@ async function generatePaginate(key, site, isEmbedded, i) {
 	return await template.template(data);
 }
 
-async function createRepo(data, oldSiteData) {
+async function createRepo(data, oldData) {
 	var obj = {
 		repoDir: data.dir,
 		repoDirGlob: path.join(data.dir, '**/*'),
@@ -495,8 +495,8 @@ async function createRepo(data, oldSiteData) {
 		cacheDirGlob: path.join('build/repoCache', data.dir, '**/*'),
 		cmd: data.cmd,
 		svgoConfig: data.svgo,
-		lastModified: oldSiteData[data.dir] ? oldSiteData[data.dir].lastModified : -1,
-		contentHash: oldSiteData[data.dir] ? oldSiteData[data.dir].contentHash : null,
+		lastModified: oldData[data.dir] ? oldData[data.dir].lastModified : -1,
+		contentHash: oldData[data.dir] ? oldData[data.dir].contentHash : null,
 		excludes: null,
 		files: null
 	};
@@ -606,7 +606,7 @@ async function build() {
 	
 	site.router.addRule(paginateRule(site, true, cacherPress));
 	site.router.addRule(paginateRule(site, false, cacherPress));
-	site.router.addRule(symbolRule('$postData', key => extractPostFrontmatter(site), cacherMemory));
+	site.router.addRule(symbolRule('$postData', key => extractPostData(site), cacherMemory));
 	
 	await site.router.generate('$main');
 	
