@@ -312,7 +312,7 @@ async function createSite() {
 				return await ejs.render(data, {
 					lib,
 					args,
-					site: config
+					config
 				}, {
 					async: true
 				});
@@ -341,7 +341,7 @@ async function createSite() {
 		ejsData: {
 			lib,
 			args: null,
-			site: config
+			config
 		},
 		config,
 		router

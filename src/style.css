@@ -132,7 +132,7 @@ body
 	text-align: center
 }
 
-<% for(var tab of site.tabs.items) { %>
+<% for(var tab of config.tabs.items) { %>
 	<% if(tab.items) { %>
 		#tab-<%- tab.name %>:hover #tabList-<%- tab.name %>
 		{
