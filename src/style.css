@@ -10,7 +10,8 @@ body
 	border: 5px solid black;
 	border-radius: 5px;
 	left: 10%;
-	width: 80%
+	width: 80%;
+	margin-bottom: 5px;
 }
 
 #tabs
