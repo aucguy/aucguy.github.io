@@ -34,7 +34,7 @@
 	
 	var pathTemplate = "<%- lib.readConfig('config.json').paginate.embedded.output %>";
 	var parser = new DOMParser();
-	var totalPages = null;
+	var totalPages = <%- (await lib.generate('$postData')).totalPaginates || 'null' %>;
 	var nextPage = 1;
 	
 	function setLoadButtonStyle(style) {
@@ -86,15 +86,7 @@
 		if(loadButton !== null) {
 			loadButton.addEventListener('click', loadPosts);
 		}
-		
-		var elems = document.getElementsByTagName('meta');
-		for(var i=0; i<elems.length; i++) {
-			var elem = elems[i];
-			if(elem.getAttribute('property') === 'self:totalPages') {
-				totalPages = safeParseInt(elem.getAttribute('content'));
-				break;
-			}
-		}
+
 		if(totalPages !== null) {
 			setLoadButtonStyle('flex');
 		}

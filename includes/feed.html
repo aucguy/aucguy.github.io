@@ -10,8 +10,4 @@
 	<p></p>
 <% } %>
 
-<% function head(__append) { %>
-	<meta property="self:totalPages" content="<%- lib.generate('$postData').totalPaginates %>">
-<% } %>
-
-<%- await lib.include('theme.html', { title: args.title, midsection, head }) %>
+<%- await lib.include('theme.html', { title: args.title, midsection }) %>
