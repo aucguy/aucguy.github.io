@@ -21,6 +21,12 @@ async function maybeResolve(x) {
 	return x instanceof Promise ? await x : x;
 }
 
+const INT_REGEX = /[0-9]+/;
+
+function isInt(x) {
+	return INT_REGEX.test(x);
+}
+
 /**
  * the router figures out how to generate each file.
  * Each rule returns the contents of the file it generates, or null if it does
@@ -206,7 +212,7 @@ function cacherFile(router, key, value) {
  */
 async function cacherPress(router, key, value) {
 	mkdirsSync(path.dirname(key));
-	fs.writeFileSync(key, await press(key, value.toString()));
+	fs.writeFileSync(key, await press(key, value));
 }
 
 /**
@@ -241,6 +247,10 @@ const mkdir = promisify(fs.mkdir);
 const lstat = promisify(fs.lstat);
 const globPromise = promisify(glob);
 const exec = promisify(child_process.exec);
+
+function readFileSync(pathname) {
+	return fs.readFileSync(pathname, { encoding: 'utf-8' });
+}
 
 //the async version of fs.existsSync
 //it does not use promisify because it resolves even if the error is true
@@ -353,15 +363,15 @@ async function press(pathname, contents, svgoConfig) {
  */
 function strToTime(str) {
 	var parts = str.split('-');
-	if(parts.length !== 3 && parts.length !== 5) {
+	if(parts.length !== 3 && parts.length !== 5 || !parts.every(isInt)) {
 		throw(new Error('invalid date'));
 	}
 	return {
-		year: parts[0],
-		month: parts[1],
-		day: parts[2],
-		hour: parts[3],
-		minute: parts[4]
+		year: parseInt(parts[0]),
+		month: parseInt(parts[1]),
+		day: parseInt(parts[2]),
+		hour: parseInt(parts[3]),
+		minute: parseInt(parts[4])
 	};
 }
 
@@ -430,9 +440,6 @@ async function createSite() {
 		markdown: function(content) {
 			return markdown.toHTML(content);
 		},
-		readConfig: function(file) {
-			return JSON.parse(fs.readFileSync(file).toString());
-		},
 		/**
 		 * returns what the router generates for the given key
 		 */
@@ -498,8 +505,8 @@ function splitFrontMatter(str) {
 function extractPostData(site) {
 	var posts = [];
 	for(var file of glob.sync('posts/**/*.md')) {
-		var content = fs.readFileSync(file, { encoding: 'utf-8' });
-		var parts = splitFrontMatter(content.toString('utf-8'));
+		var content = fs.readFileSync(file);
+		var parts = splitFrontMatter(content.toString());
 		var key = path.relative('posts', file).replace(/[.]md$/, '');
 		if(key in posts) {
 			throw(new Error(`duplicate post name: ${key}`));
@@ -568,13 +575,11 @@ async function formatStandalonePost(key, site, templatePath) {
 /**
  * creates a paginate object
  * @param the paginate's config
- * @param standalone whether or not the paginate is standalone
  */
-function createPaginateType(config, standalone) {
+function createPaginateType(config) {
 	return {
 		template: compileTemplate(config.template),
 		path: config.output,
-		standalone
 	};
 }
 
@@ -750,7 +755,7 @@ async function build() {
 		var postData = await site.router.generate('$postData');
 		//all of the standalone post pages
 		for(var post of postData.posts) {
-			file = path.join('public/posts', path.relative('build/posts', file));
+			file = path.join('public/posts', path.relative('build/posts', post.path));
 			await site.router.generate(file);
 		}
 		//all of the paginates, both embedded and standalone

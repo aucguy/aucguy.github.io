@@ -32,7 +32,7 @@
 		request.send();
 	}
 	
-	var pathTemplate = "<%- lib.readConfig('config.json').paginate.embedded.output %>";
+	var pathTemplate = "<%- config.paginate.embedded.output %>";
 	var parser = new DOMParser();
 	var totalPages = <%- (await lib.generate('$postData')).totalPaginates || 'null' %>;
 	var nextPage = 1;
