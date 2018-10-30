@@ -1,5 +1,16 @@
+<% var description = `
+In this game pieces, which consist of a color and shape, come in from the left and right and go to the center. Once they hit the ring they will pick up the arrow corresponding to the key pressed. WASD for the left and the arrow keys for the right. Once they hit the center they will go to the goal (static pieces) in the direction of the arrow. You're goal is to direct the pieces to the goals with the same shape. 
+
+However, the shapes may shift. If the two pieces in the center have the same shape, the shape will 'rotate' clockwise. This means triangles will turn into squares, squares to circles, circles to pentagons and pentagons to triangles. If the two pieces have the same color then the shape will 'rotate' counterclockwise (opposite of the last one). If the two pieces have the same color and shape then the shape will rotate twice. This means triangles to circles, vice versa and squares to pentagons, vice versa. This requires you to think ahead. 
+
+If you mess up enough, you lose. (Duh).
+
+[Source](https://github.com/aucguy/Ludum-Dare-33/)
+`; %>
+
 <%- await lib.include('LDentry.html', {
 	game: 'index.html',
 	entryLink: 'http://ludumdare.com/compo/ludum-dare-35/?action=preview&uid=41457',
-	title: 'Ludum Dare 35 Entry (Color Shape Stack)'
+	title: 'Ludum Dare 35 Entry (Color Shape Stack)',
+	description
 }) %>

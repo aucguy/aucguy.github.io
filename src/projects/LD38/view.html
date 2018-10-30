@@ -1,5 +1,14 @@
+<% var description = `
+Note: this the physics in this game is broken, but you can try to play anyway.
+
+Controls: click to create a joint and drag between joints to create connections. Press R on joints and connections to remove them. Press S to switch between editor and simulation mode. The point of this game was to have gravity gradually increasing and the structure you built having to stay above a certain point, but that didn't work out.
+
+[Source](https://github.com/aucguy/Ludum-Dare-38)
+[Source as of submission](https://github.com/aucguy/Ludum-Dare-38/tree/ab05fca25e4113ee30c3c8e4ad97a21b8e28b7d)
+`; %>
 <%- await lib.include('LDentry.html', {
 	game: 'index.html',
 	entryLink: 'https://ldjam.com/events/ludum-dare/38/planet-carbalsnahps-2',
-	title: 'Ludum Dare 38 (Planet Carbalsnahps 2)'
+	title: 'Ludum Dare 38 (Planet Carbalsnahps 2)',
+	description
 }) %>

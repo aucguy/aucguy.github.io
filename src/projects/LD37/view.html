@@ -1,5 +1,25 @@
+<% var description = `
+Note: this game was not finished, so don't bother rating. You can still try it if you like.  
+Program the turtle(s) to activate switches, unlock locks and get to the exit. Forking makes the turtle split in two so it can do multiple things. 
+
+Sbl (the language): 
+
+forward - moves the turtle forward  
+left - turns the turtle to the left  
+right - turns the turtle to the right  
+repeat x:  
+<something> 
+- repeats <something> x number of times 
+
+fork:  
+<something>  
+- creates a new turtle. The new one will execute <something> then execute code after. The old turtle will directly execute the code after. Unfortunately, a fork cannot be contained within another block (or repeat) and a block cannot contain a fork due to the implementation. This is why the language is broken.
+
+[Source](https://github.com/aucguy/Ludum-Dare-37/tree/7d8dbccee9387e41b5f14c22d8313db52a936ee8)
+`; %>
 <%- await lib.include('LDentry.html', {
 	game: 'index.html',
 	entryLink: 'http://ludumdare.com/compo/ludum-dare-37/?action=preview&uid=41457',
-	title: 'Ludum Dare 37 Entry (Turtle Fork)'
+	title: 'Ludum Dare 37 Entry (Turtle Fork)',
+	description
 }) %>

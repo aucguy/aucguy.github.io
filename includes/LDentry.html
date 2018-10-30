@@ -3,6 +3,9 @@
 	<%- args.title %>
 </h1>
 <iframe src="<%- args.game %>" width="700px" height="500px"></iframe>
+<% if(args.description) { %>
+	<%- lib.markdown(args.description) %>
+<% } %>
 <p>
 	<a href="<%- args.game %>">Click here if scrolling is a problem</a>
 </p>

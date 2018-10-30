@@ -1,5 +1,13 @@
+<% var description = `
+The premise of this game is that you are an evil wizard trying to take over the world. But there is a hero that is trying to stop you. So you must summon minions to over take him. Further instructions are in game
+
+[Source](https://github.com/aucguy/Ludum-Dare-33/archive/1.0.zip)
+[Repository](https://github.com/aucguy/Ludum-Dare-33/)
+`; %>
+
 <%- await lib.include('LDentry.html', {
 	game: 'run.html',
 	entryLink: 'http://ludumdare.com/compo/ludum-dare-33/?action=preview&uid=41457',
-	title: 'Ludum Dare 33 Entry (Minion Army)'
+	title: 'Ludum Dare 33 Entry (Minion Army)',
+	description
 }) %>
