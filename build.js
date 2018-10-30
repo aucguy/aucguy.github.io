@@ -681,6 +681,25 @@ async function createRepo(data, oldData) {
 }
 
 /**
+ * copies a directory into another directory
+ * 
+ * @param src the source directory
+ * @param dst the destination directory
+ * @param process optional. Processes the contents of the file beore it is written
+ */
+async function copyDir(src, dst, process) {
+	var srcGlob = path.join(src, '**/*');
+	for(var srcFile of await globPromise(srcGlob, { nodir: true })) {
+		var dstFile = path.join(dst, path.relative(src, srcFile));
+		var contents = await readFile(srcFile);
+		if(process) {
+			contents = await maybeResolve(process(srcFile, dstFile, contents));
+		}
+		await writeFileMkdirs(dstFile, contents);
+	}
+}
+
+/**
  * Copies the repositories built files into the public folder.
  * Builds the repos as needed. The build data contains the git HEAD commit
  * hashes of the repos.
@@ -711,20 +730,14 @@ async function outputBuild(site, oldData) {
 				cwd: repo.repoDir
 			});
 			//update the cache
-			for(var file of await globPromise(repo.buildDirGlob, { nodir: true })) {
-				var outFile = path.join(repo.cacheDir, path.relative(repo.buildDir, file));
-				var content = await press(outFile, await readFile(file), repo.svgoConfig);
-				await writeFileMkdirs(outFile, content);
-			}
+			await copyDir(repo.buildDir, repo.cacheDir,
+					(srcFile, dstFile, contents) => press(dstFile, contents, repo.svgoConfig));
 		}
 		newData[repo.repoDir] = {
 			head
 		};
 		//copy the files from the cache to the output
-		for(var file of await globPromise(repo.cacheDirGlob, { nodir: true })) {
-			var outFile = path.join(repo.outputDir, path.relative(repo.cacheDir, file));
-			await writeFileMkdirs(outFile, await readFile(file));
-		}
+		await copyDir(repo.cacheDir, repo.outputDir);
 	}));
 	await writeFile('files.txt', allFiles.join('\n'));
 	return newData;
