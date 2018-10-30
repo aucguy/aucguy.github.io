@@ -248,10 +248,6 @@ const lstat = promisify(fs.lstat);
 const globPromise = promisify(glob);
 const exec = promisify(child_process.exec);
 
-function readFileSync(pathname) {
-	return fs.readFileSync(pathname, { encoding: 'utf-8' });
-}
-
 //the async version of fs.existsSync
 //it does not use promisify because it resolves even if the error is true
 async function exists(pathname) {
