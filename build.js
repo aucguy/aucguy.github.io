@@ -314,7 +314,7 @@ function svgoPromise(contents, config) {
 async function press(pathname, contents, svgoConfig) {
 	var ext = path.extname(pathname);
 	if(ext === '.js') {
-		contents = babel.transformSync(contents, {
+		contents = babel.transformSync(contents.toString(), {
 			plugins: ['@babel/plugin-transform-block-scoping']
 		}).code;
 		result = uglify.minify(contents);
@@ -327,7 +327,7 @@ async function press(pathname, contents, svgoConfig) {
 		}
 		contents = result.code;
 	} else if(ext === '.html') {
-		contents = htmlMinify(contents, {
+		contents = htmlMinify(contents.toString(), {
 			collapseBooleanAttributes: true,
 			collapseInlineTagWhitespace: true,
 			collapseWhitespace: true,
@@ -343,10 +343,10 @@ async function press(pathname, contents, svgoConfig) {
 	} else if(ext === '.svg') {
 		svgoConfig = svgoConfig || {};
 		if(!svgoConfig.disabled) {
-			contents = await svgoPromise(contents, svgoConfig);
+			contents = await svgoPromise(contents.toString(), svgoConfig);
 		}
 	} else if(ext === '.css') {
-		return uglifycss.processString(contents, {});
+		return uglifycss.processString(contents.toString(), {});
 	}
 	return contents;
 }
@@ -713,7 +713,8 @@ async function outputBuild(site, oldData) {
 			//update the cache
 			for(var file of await globPromise(repo.buildDirGlob, { nodir: true })) {
 				var outFile = path.join(repo.cacheDir, path.relative(repo.buildDir, file));
-				await writeFileMkdirs(outFile, await readFile(file));
+				var content = await press(outFile, await readFile(file), repo.svgoConfig);
+				await writeFileMkdirs(outFile, content);
 			}
 		}
 		newData[repo.repoDir] = {
