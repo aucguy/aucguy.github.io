@@ -1,4 +1,9 @@
+<% function head(__append) { %>
+	<meta name="isStandalonePaginate" content="true"></script>
+<% } %>
+
 <%- await lib.include('theme.html', {
 	title: `feed page ${paginator.page + 1} of ${paginator.totalPages}`,
-	midsection: async () => await lib.includePage(`public/paginates/paginate${paginator.page}.html`, true)
+	midsection: async () => await lib.includePage(`public/paginates/paginate${paginator.page}.html`, true),
+	head
 }) %>

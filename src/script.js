@@ -82,6 +82,15 @@
 	}
 	
 	document.addEventListener("DOMContentLoaded", function() {
+		var elems = document.getElementsByTagName('meta');
+		var elem;
+		for(var i=0; i<elems.length; i++) {
+			elem = elems[i];
+			if(elem.name === 'isStandalonePaginate' && elem.content === 'true') {
+				window.location.href = '/index.html';
+			}
+		}
+		
 		var loadButton = document.getElementById('loadButton');
 		if(loadButton !== null) {
 			loadButton.addEventListener('click', loadPosts);
