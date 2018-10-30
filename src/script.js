@@ -87,7 +87,7 @@
 			loadButton.addEventListener('click', loadPosts);
 		}
 
-		if(totalPages !== null) {
+		if(totalPages !== null && loadButton !== null) {
 			setLoadButtonStyle('flex');
 		}
 	});
