@@ -1,0 +1,9 @@
+<% async function content(__append) { %>
+	<%- await lib.includePage('public/projects/pesachmeme/content.html') %>
+<% } %>
+
+<% async function head(__append) { %>
+	<%- await lib.includePage('public/projects/pesachmeme/head.html') %>
+<% } %>
+
+<%- await lib.include('content.html', { content, title: 'Pesach Meme', head }) %>

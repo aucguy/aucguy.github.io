@@ -726,9 +726,14 @@ async function outputBuild(site, oldData) {
 		//changed, so then rebuild
 		if(repo.lastHead !== head) {
 			console.log('building ' + repo.repoDir);
-			await exec(repo.cmd, {
-				cwd: repo.repoDir
-			});
+			try {
+				await exec(repo.cmd, {
+					cwd: repo.repoDir
+				});
+			} catch(error) {
+				console.error('error building repo ' + repo.repoDir);
+				console.error(error.stack);
+			}
 			//update the cache
 			await copyDir(repo.buildDir, repo.cacheDir,
 					(srcFile, dstFile, contents) => press(dstFile, contents, repo.svgoConfig));

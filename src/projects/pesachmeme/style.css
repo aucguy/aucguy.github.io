@@ -1,0 +1,27 @@
+#text {
+  text-align: center;
+  visibility: hidden;
+}
+
+#warning {
+  text-align: center;
+  visibility: hidden
+}
+
+#video {
+  position: relative;
+  left: 50%;
+  margin-left: -160px;
+}
+
+#image {
+  position: absolute;
+  display: none;
+  left: 50%;
+  top: 120px;
+  margin-left: -25px;
+}
+
+#container {
+  position: relative
+}
