@@ -16,3 +16,6 @@
 [submodule "repos/Ludum-Dare-42"]
 	path = repos/Ludum-Dare-42
 	url = https://github.com/aucguy/Ludum-Dare-42.git
+[submodule "repos/Ludum-Dare-46"]
+	path = repos/Ludum-Dare-46
+	url = https://github.com/aucguy/Ludum-Dare-46.git

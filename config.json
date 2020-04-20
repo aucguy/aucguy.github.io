@@ -61,6 +61,14 @@
 					{
 						"name": "Mike's Pizza Shop",
 						"link": "/projects/LD42/view.html"
+					},
+					{
+						"name": "Slime Forest",
+						"link": "/projects/LD46/view.html"
+					},
+					{
+						"name": "Pesach Meme",
+						"link": "/projects/pesachmeme/index.html"
 					}
 				]
 			},
@@ -132,6 +140,18 @@
 			"cmd": "npm install & gulp build",
 			"build": "build/release",
 			"output": "projects/LD42",
+			"exclude": "**/node_modules/**",
+			"svgo": {
+				"plugins": [{
+					"cleanupIDs": false
+				}]
+			}
+		},
+		{
+			"dir": "repos/Ludum-Dare-46",
+			"cmd": "npm install & gulp setup & gulp build",
+			"build": "build/release",
+			"output": "projects/LD46",
 			"exclude": "**/node_modules/**",
 			"svgo": {
 				"plugins": [{
