@@ -81,7 +81,7 @@
 	"outputBuild": [
 		{
 			"dir": "repos/Ludum-Dare-33",
-			"cmd": "npm install & grunt build",
+			"cmd": "npm install & gulp build",
 			"build": "build/release",
 			"output": "projects/LD33",
 			"exclude": "**/node_modules/**",
@@ -91,7 +91,7 @@
 		},
 		{
 			"dir": "repos/Ludum-Dare-35",
-			"cmd": "npm install & grunt build",
+			"cmd": "npm install & gulp setup & gulp build",
 			"build": "build/release",
 			"output": "projects/LD35",
 			"exclude": "**/node_modules/**",
@@ -103,7 +103,7 @@
 		},
 		{
 			"dir": "repos/Ludum-Dare-36",
-			"cmd": "npm install & grunt build",
+			"cmd": "npm install & gulp setup & gulp build",
 			"build": "build/release",
 			"output": "projects/LD36",
 			"exclude": "**/node_modules/**",
@@ -115,7 +115,7 @@
 		},
 		{
 			"dir": "repos/Ludum-Dare-37",
-			"cmd": "npm install & grunt build",
+			"cmd": "npm install & gulp setup & gulp build",
 			"build": "build/release",
 			"output": "projects/LD37",
 			"exclude": "**/node_modules/**",
@@ -127,7 +127,7 @@
 		},
 		{
 			"dir": "repos/Ludum-Dare-38",
-			"cmd": "npm install & gulp build",
+			"cmd": "npm install & gulp setup & gulp build",
 			"build": "build/release",
 			"output": "projects/LD38",
 			"exclude": "**/node_modules/**",
@@ -137,7 +137,7 @@
 		},
 		{
 			"dir": "repos/Ludum-Dare-42",
-			"cmd": "npm install & gulp build",
+			"cmd": "npm install & gulp setup & gulp build",
 			"build": "build/release",
 			"output": "projects/LD42",
 			"exclude": "**/node_modules/**",
