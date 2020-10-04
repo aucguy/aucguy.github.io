@@ -67,6 +67,10 @@
 						"link": "/projects/LD46/view.html"
 					},
 					{
+						"name": "Square Time",
+						"link": "/projects/LD47/view.html"
+					},
+					{
 						"name": "Pesach Meme",
 						"link": "/projects/pesachmeme/index.html"
 					}
@@ -152,6 +156,18 @@
 			"cmd": "npm install & gulp setup & gulp build",
 			"build": "build/release",
 			"output": "projects/LD46",
+			"exclude": "**/node_modules/**",
+			"svgo": {
+				"plugins": [{
+					"cleanupIDs": false
+				}]
+			}
+		},
+		{
+			"dir": "repos/Ludum-Dare-47",
+			"cmd": "npm install & gulp setup & gulp build",
+			"build": "build/release",
+			"output": "projects/LD47",
 			"exclude": "**/node_modules/**",
 			"svgo": {
 				"plugins": [{
