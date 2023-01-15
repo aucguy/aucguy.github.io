@@ -1,8 +1,8 @@
 <% async function content(__append) {
 	var postData = await lib.generate('$postData');
-	var output = ['#Posts\n\n'];
+	var output = ['# Posts\n\n'];
 	for(var post of postData.posts) {
-		var path = post.path.replace(/^build/, '');
+		var path = post.path.replace(/^build/, '').replaceAll('\\', '/');
 		output.push(`* [${post.title} - ${lib.date(post.date)}](${path})\n`);
 	} %>
 	<%- lib.markdown(output.join('')); %>

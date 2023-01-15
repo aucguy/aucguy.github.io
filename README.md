@@ -4,6 +4,5 @@ Development stuff. The generated public folder is pushed to the master branch fo
 
 # setup
 1) git clone https://github.com/aucguy/aucguy.github.io.git
-2) cd aucguy.github.io
-3) git checkout develop
-4) ./setup
+2) npm run build
+3) run an http-server from ./public

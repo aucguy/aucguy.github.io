@@ -6,21 +6,17 @@
   "dependencies": {
     "@babel/core": "^7.0.0",
     "@babel/plugin-transform-block-scoping": "^7.0.0",
-    "del": "^3.0.0",
+    "clean-css": "^5.3.1",
     "ejs": "^2.6.1",
     "glob": "^7.1.2",
-    "gulp-ext-replace": "^0.3.0",
-    "gulp-markdown": "^3.0.0",
-    "html-minifier": "^3.5.20",
-    "http-serve": "^1.0.1",
-    "markdown": "^0.5.0",
+    "html-minifier-terser": "^7.1.0",
+    "marked": "^4.2.12",
     "svgo": "^0.7.2",
-    "uglify-js": "^3.4.8",
-    "uglifycss": "0.0.29"
+    "uglify-js": "^3.4.8"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node scripts/build.mjs",
+    "clean": "node scripts/clean.mjs"
   },
   "repository": {
     "type": "git",
@@ -33,5 +29,12 @@
   "bugs": {
     "url": "https://github.com/aucguy/aucguy.github.io/issues"
   },
-  "homepage": "https://github.com/aucguy/aucguy.github.io#readme"
+  "homepage": "https://github.com/aucguy/aucguy.github.io#readme",
+  "devDependencies": {
+    "eslint": "^8.32.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.4",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1"
+  }
 }
