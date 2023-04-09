@@ -4,8 +4,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var DAY_TIME = 24 * HOUR_TIME;
   var INITIAL_FACTOR = 0.2;
   
-  var START = Date.UTC(2020, 3, 8, 16, 4); //April 8, 2020 7:04 pm IDT
-  var END = Date.UTC(2020, 3, 15, 17, 8);  //April 15, 2020, 8:08 pm IDT
+  var START = Date.UTC(2023, 3, 5, 17, 21); //April 5, 2023 6:21 pm IDT
+  var END = Date.UTC(2023, 3, 12, 18, 43);  //April 12, 2023, 7:43 pm IDT
+
+  //var START = Date.UTC(2020, 3, 8, 16, 4); //April 8, 2020 7:04 pm IDT
+  //var END = Date.UTC(2020, 3, 15, 17, 8);  //April 15, 2020, 8:08 pm IDT
   
   var video = document.getElementById('video');
   var audio = document.getElementById('audio');

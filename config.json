@@ -71,6 +71,10 @@
 						"link": "/projects/LD47/view.html"
 					},
 					{
+						"name": "Exploding Carrots",
+						"link": "/projects/LD52/view.html"
+					},
+					{
 						"name": "Pesach Meme",
 						"link": "/projects/pesachmeme/index.html"
 					}
@@ -83,7 +87,7 @@
 		]
 	},
 	"pressIgnore": [
-		"public/projects/LD*/app.js",
+		"public/projects/LD*/*.js",
 		"public/projects/LD*/assets/**/*",
 		"public/projects/LD*/index.html",
 		"public/projects/LD33/scripts/**/*.js"
