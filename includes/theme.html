@@ -10,7 +10,7 @@
 	
 	<link rel="stylesheet" type="text/css" href="/style.css">
 	<% if(args.head) { %>
-		<%- args.head(__append) %>
+		<%- await lib.maybeResolve(args.head(__append)) %>
 	<% } %>
 </head>
 <body>
