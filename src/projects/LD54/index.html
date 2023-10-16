@@ -1,0 +1,24 @@
+<% function content(__append) { %>
+    
+<%- lib.markdown(`
+# Droplet Dungeon
+
+This is my entry for Ludum Dare 54 extra.
+
+## Instructions
+
+Use the WASD or arrow keys to move. Use the space bar to spray water.
+
+Once you enter a room you will need to beat the room to continue.
+Spray water onto the big fires to put them out. Once you have put out all
+the big fires the room, the room will unlock.
+
+There are a total of four rooms, including the tutorial room.
+
+* [Web](exports/web/Droplet-Dungeon.html)
+* [Windows](exports/Droplet-Dungeon-Windows.zip)
+* [Source](https://github.com/aucguy/Ludum-Dare-54)
+`) %>
+<% } %>
+
+<%- await lib.include('content.html', { content, title: 'Ludum Dare 54 - Droplet Dungeon' }) %>
